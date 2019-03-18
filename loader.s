@@ -1,3 +1,5 @@
+# BootLoader 在載入 kernel 的時候，需要辨識 magic header 是否正確
+# 否則使用 gruB 載入的時候，會發生錯誤
 .set MAGIC, 0x1badb002
 .set FLAGS, (1<<0 | 1<< 1)
 .set CHECKSUM, -(MAGIC + FLAGS)
@@ -25,7 +27,7 @@ loader:
 
 # 無窮迴圈
 # 如果 kernelMain 的 function 執行結束，則會進入到這個地方
-# 如果沒有家的話（？）
+# 如果沒有加的話，執行完 kernelMain 之後會重新開機
 _stop:
 	cli
 	hlt
