@@ -1,5 +1,11 @@
-# BootLoader 在載入 kernel 的時候，需要辨識 magic header 是否正確
-# 否則使用 gruB 載入的時候，會發生錯誤
+# 這裡使用的 BootLoader 是 grub
+# 
+# 0x1badb002 為 bootloader header，又稱作為 magic number 
+# BootLoader 在載入 kernel 的時候，會去辨識此 header 是否正確，否則會發生錯誤
+# 
+# BootLoader grub 會執行以下指令
+#   eax = multiboot struct
+#   ebx = magic number
 .set MAGIC, 0x1badb002
 .set FLAGS, (1<<0 | 1<< 1)
 .set CHECKSUM, -(MAGIC + FLAGS)
@@ -10,8 +16,8 @@
 	.long CHECKSUM
 
 .section .text
-.extern kernelMain
-.global loader
+.extern kernelMain 
+.global loader # 進入點
 
 # 把現有的暫存器存入 stack，然後呼叫 kernelMain 這個 function
 loader:
@@ -21,8 +27,16 @@ loader:
   # 造成 C++ 會無法在開機執行
   # 這行在設定 esp stack pointer 的起始位置
 	mov $kernel_stack, %esp   
-	push %eax # 把 eax extended accumulator register 放到 stack 裡面，然後 esp + 4
-	push %ebx # 把 eax extended base register 放到 stack 裡面，然後 esp + 4
+
+  # eax: extended accumulator register
+  # 裡面放的是 multiboot struct
+  # 把 eax 放到 esp 的 stack 裡面，然後 esp + 4
+	push %eax 
+
+  # ebx: extended base register
+  # 裡面放的是 magic number
+  # 把 ebx 放到 esp 的 stack 裡面，然後 esp + 4
+	push %ebx
 	call kernelMain # 呼叫 C++ 的 function
 
 # 無窮迴圈
