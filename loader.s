@@ -1,3 +1,4 @@
+# https://wiki.osdev.org/Bare_Bones
 # 這裡使用的 BootLoader 是 grub
 # 
 # 0x1badb002 為 bootloader header，又稱作為 magic number 
@@ -17,6 +18,7 @@
 
 .section .text
 .extern kernelMain 
+.extern callConstructors
 .global loader # 進入點
 
 # 把現有的暫存器存入 stack，然後呼叫 kernelMain 這個 function
@@ -27,6 +29,8 @@ loader:
   # 造成 C++ 會無法在開機執行
   # 這行在設定 esp stack pointer 的起始位置
 	mov $kernel_stack, %esp   
+
+  call callConstructors
 
   # eax: extended accumulator register
   # 裡面放的是 multiboot struct
