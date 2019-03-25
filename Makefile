@@ -34,3 +34,6 @@ run: mykernel.iso
 	(pkill VirtualBox && sleep 1) || true
 	VirtualBox --startvm "My Operating System" &
 	
+clean:
+	rm -rf *.o *.bin *.iso
+
