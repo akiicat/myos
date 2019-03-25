@@ -1,4 +1,6 @@
 
+#include "types.h"
+
 // 將 string 寫到特定的記憶體位置 0xb8000
 // 顯示卡則會去此位置抓取值，將文字 render 到螢幕上
 //
@@ -9,7 +11,7 @@
 //   - low byte:
 //     - 8bit: char
 void printf(char *str) {
-	unsigned short * VideoMemory = (unsigned short *) 0xb8000;
+  static uint16_t * VideoMemory = (uint16_t *) 0xb8000;
 
 	for (int i = 0; str[i] != '\0'; ++i) {
 		VideoMemory[i] = (VideoMemory[i] & 0xFF00) | str[i];
@@ -27,7 +29,7 @@ extern "C" void callConstructors() {
 }
 
 
-extern "C" void kernelMain(void *multiboot_structure, unsigned int magicnumber) {
+extern "C" void kernelMain(void *multiboot_structure, uint16_t magicnumber) {
 	printf("Hello World!");
 
 	while(1);
