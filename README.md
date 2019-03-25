@@ -1,7 +1,18 @@
 
-
+## Install Compiler
+```shell
+sudo apt update -y
+sudo apt install -y g++ binutils libc6-dev-i386
+```
 
 ## Boot Kernel From Grub
+
+```shell
+make
+make install
+```
+
+After running makefile, append this section to the /boot/grub/grub.cfg file:
 
 ```
 # /boot/grub/grub.cfg
@@ -13,3 +24,24 @@ menuentry 'My Operating System' {
 }
 ### END MYKERNEL ###
 ```
+
+Reboot your computer and enter the BootLoader grub.
+
+## Boot Kernel From VirtualBox
+
+Install relative packages
+
+```shell
+sudo apt update -y
+sudo apt install -y virtualbox xorriso
+```
+
+Create new Virtual Machine
+
+Type: Other
+Version: Other/Unknown
+RAM: 64MB
+Hard Disk: Do not add a virutal hard disk
+
+
+
