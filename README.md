@@ -32,7 +32,7 @@ Reboot your computer and enter the BootLoader grub.
 Install relative packages
 
 ```shell
-sudo apt update -y
+sudo apt update -y 
 sudo apt install -y virtualbox xorriso
 ```
 
@@ -43,5 +43,23 @@ Version: Other/Unknown
 RAM: 64MB
 Hard Disk: Do not add a virutal hard disk
 
+```shell
+make run
+```
 
+## Boot Kernel From Parallel Desktop on Mac
 
+The run section in Makefile should be replaced with the below section.
+
+```shell
+# Makefile
+run: mykernel.iso
+	prlctl delete myos
+	prlctl create myos --ostype other
+	prlctl set myos --device-set cdrom0 --image 'mykernel.iso' --enable --connect
+	prlctl start myos
+```
+
+```shell
+make run
+```
