@@ -43,6 +43,8 @@ class GlobalDescriptorTable {
         uint32_t Base();
         uint32_t Limit();
 
+      // The packed type attribute specifies that a type must have the smallest possible alignment.
+      // 叫compiler不要為我們做對齊的最佳化
     } __attribute__((packed));
 
     SegmentDescriptor nullSegmentSelector;

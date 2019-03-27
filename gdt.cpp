@@ -72,7 +72,7 @@ GlobalDescriptorTable::GlobalDescriptorTable() :
   uint32_t i[2];
 
   i[0] = (uint32_t)this;
-  i[1] = sizeof(GlobalDescriptorTable) << 16;
+  i[1] = sizeof(GlobalDescriptorTable) << 16; // 65535 entries = 2 ^ 19 bytes
 
   // Telling the CPU where the table stands
   //   lgdt: load global descriptor table
@@ -113,7 +113,7 @@ GlobalDescriptorTable::SegmentDescriptor::SegmentDescriptor(uint32_t base, uint3
   }
   else {
     if ((limit & 0xFFF) != 0xFFF) 
-      limit = (limit >> 12) - 1; // It is not allowed that limit is not end with 0xFFF, so manually fix it
+      limit = (limit >> 12) - 1; // It is not allowed that limit is not end with 0xFFF, so manually fix it, but why subtrace 1
     else
       limit = limit >> 12;
 
@@ -134,6 +134,7 @@ GlobalDescriptorTable::SegmentDescriptor::SegmentDescriptor(uint32_t base, uint3
   target[5] = flags;
 }
 
+// Decode the base
 uint32_t GlobalDescriptorTable::SegmentDescriptor::Base() {
   uint8_t *target = (uint8_t *)this;
   uint32_t result = target[7];
@@ -143,6 +144,7 @@ uint32_t GlobalDescriptorTable::SegmentDescriptor::Base() {
   return result;
 }
 
+// Decode the limit
 uint32_t GlobalDescriptorTable::SegmentDescriptor::Limit() {
   uint8_t *target = (uint8_t *)this;
   uint32_t result = target[6] & 0xF;
