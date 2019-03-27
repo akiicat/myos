@@ -85,6 +85,7 @@ uint16_t GlobalDescriptorTable::CodeSegmentSelector() {
 GlobalDescriptorTable::SegmentDescriptor::SegmentDescriptor(uint32_t base, uint32_t limit, uint8_t flags) {
   uint8_t *target = (uint8_t *)this;
 
+  // check it!!!
   // limit    target[6] target[1:0]
   // 0x00000000   0x40      0x0000
   // 0x00000FFF   0x40      0x0FFF
@@ -93,22 +94,25 @@ GlobalDescriptorTable::SegmentDescriptor::SegmentDescriptor(uint32_t base, uint3
   // 0x00001FFF   0xC0      0x0001
   // 0x54321000   0xC5      0x4320
   // 0x54321FFF   0xC5      0x4321
+  // Adjust granularity if required
   if (limit <= 65536) {
     target[6] = 0x40;
   }
   else {
     if ((limit & 0xFFF) != 0xFFF) 
-      limit = (limit >> 12) - 1;
+      limit = (limit >> 12) - 1; // It is not allowed that limit is not end with 0xFFF, so manually fix it
     else
       limit = limit >> 12;
 
     target[6] = 0xC0;
   }
 
+  // Encode the limit
   target[0] = limit & 0xFF;
   target[1] = limit >> 8 & 0xFF;
   target[6] |= limit >> 16 & 0xF;;
 
+  // Encode the base
   target[2] = base & 0xFF;
   target[3] = (base >> 8) & 0xFF;
   target[4] = (base >> 16) & 0xFF;
