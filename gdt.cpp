@@ -51,21 +51,34 @@
 
 #include "gdt.h"
 
+/* What should I put in my GDT?
+ *
+ *   The null descriptor which is never referenced by the processor. Certain emulators, like
+ * Bochs, will complain about limit exceptions if you do not have one present. Some use
+ * this descriptor to store a pointer to the GDT itself (to use with the LGDT instruction).
+ * The null descriptor is 8 bytes wide and the pointer is 6 bytes wide so it might just be
+ * the perfect place for this.
+ *
+ *   A code segment descriptor (for your kernel, it should have type 0x9A)
+ *
+ *  A data segment descriptor (you can't write to a code segment, so add this with type 0x92)
+ */
 GlobalDescriptorTable::GlobalDescriptorTable() :
   nullSegmentSelector(0, 0, 0),
   unusedSegmentSelector(0, 0, 0),
-  codeSegmentSelector(0, 64*1024*1024, 0x9A),
-  dataSegmentSelector(0, 64*1024*1024, 0x92)
+  codeSegmentSelector(0, 64*1024*1024, 0x9A), // 64MiB for code segment
+  dataSegmentSelector(0, 64*1024*1024, 0x92)  // 64MiB for data segment
 {
   uint32_t i[2];
 
   i[0] = (uint32_t)this;
   i[1] = sizeof(GlobalDescriptorTable) << 16;
 
-  // lgdt: load global descriptor table
-  // %0: output operand
-  // %1: input operand
-  // p: a valid memory address (pointer)
+  // Telling the CPU where the table stands
+  //   lgdt: load global descriptor table
+  //   %0: output operand
+  //   %1: input operand
+  //   p: a valid memory address (pointer)
   asm volatile("lgdt (%0)": :"p" (((uint8_t *) i) + 2)); 
 
 }
