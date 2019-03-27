@@ -151,9 +151,8 @@ uint32_t GlobalDescriptorTable::SegmentDescriptor::Limit() {
   result = (result << 8) + target[1];
   result = (result << 8) + target[0];
 
-  // why need to add target[0] ?
   if ((target[6] & 0xC0) == 0xC0)
-    result = (result << 12) + target[0] | 0xFFF;
+    result = (result << 12) | 0xFFF;
 
   return result;
 }
