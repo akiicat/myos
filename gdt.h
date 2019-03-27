@@ -1,4 +1,6 @@
 /*
+ * Global Descriptor Table is a Segment Table
+ *
  * Intel defined 3 types of tables:
  *   - Interrupt Descriptor Table (IDT which is supplants the IVT)
  *   - Global Descriptor Table (GDT)
