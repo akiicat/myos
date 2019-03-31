@@ -1,6 +1,7 @@
 
 #include "types.h"
 #include "gdt.h"
+#include "interrupts.h"
 
 // 將 string 寫到特定的記憶體位置 0xb8000
 // 顯示卡則會去此位置抓取值，將文字 render 到螢幕上
@@ -66,6 +67,9 @@ extern "C" void kernelMain(void *multiboot_structure, uint16_t magicnumber) {
   printf("Hello World!");
 
   GlobalDescriptorTable gdt;
+  InterruptManager interrupts(&gdt);
+
+  interrupts.Activate();
 
   while(1);
 }
