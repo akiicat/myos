@@ -1,5 +1,6 @@
 #include "interrupts.h"
 
+// forward definition of printf
 void printf(char* str);
 
 InterruptManager::GateDescriptor InterruptManager::interruptDescriptorTable[256];
@@ -69,7 +70,7 @@ uint32_t InterruptManager::handleInterrupt(uint8_t interruptNumber, uint32_t esp
 
   printf(" INTERUPT");
 
-
-
+  // return the same stack pointer for disable task switching
+  // since we don't have multiple processes
   return esp;
 }

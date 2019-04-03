@@ -48,8 +48,31 @@ class InterruptManager {
     static void IgnoreInterruptRequest();
     static void HandleInterruptRequest0x00(); // timer
     static void HandleInterruptRequest0x01(); // keyboard
-    
-
 };
 
 #endif
+
+
+/*
+ * $ nm interrupts.o
+ *          U _GLOBAL_OFFSET_TABLE_
+ * 00000000 T __x86.get_pc_thunk.ax
+ * 00000000 T __x86.get_pc_thunk.bx
+ *          U _Z6printfPc
+ *          U _ZN12Port8BitSlow5WriteEh
+ *          U _ZN12Port8BitSlowC1Et
+ *          U _ZN12Port8BitSlowD1Ev
+ * 000002dc T _ZN16InterruptManager15handleInterruptEhj  # the name of the handle interrupt static method
+ *          U _ZN16InterruptManager22IgnoreInterruptRequestEv
+ * 00000000 B _ZN16InterruptManager24interruptDescriptorTableE
+ *          U _ZN16InterruptManager26HandleInterruptRequest0x00Ev
+ *          U _ZN16InterruptManager26HandleInterruptRequest0x01Ev
+ * 00000000 T _ZN16InterruptManager32SetInterruptDescriptorTableEntryEhtPFvvEhh
+ * 000002ca T _ZN16InterruptManager8ActivateEv
+ * 0000009a T _ZN16InterruptManagerC1EP21GlobalDescriptorTable
+ * 0000009a T _ZN16InterruptManagerC2EP21GlobalDescriptorTable
+ * 0000026c T _ZN16InterruptManagerD1Ev
+ * 0000026c T _ZN16InterruptManagerD2Ev
+ *          U _ZN21GlobalDescriptorTable19CodeSegmentSelectorEv
+ *
+ */
