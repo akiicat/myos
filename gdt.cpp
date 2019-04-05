@@ -23,7 +23,7 @@
  *
  *  Pr: Present bit. This must be 1 for all valid selectors.
  *  Privl: Privilege, 2 bits. Contains the ring level, 0 = highest (kernel),
- *         3 = lowest (user applications).
+ *         3 = lowest (user applications). (Dual mode)
  *  S: Descriptor type. This bit should be set for code or data segments and
  *     should be cleared for system segments (eg. a Task State Segment)
  *  Ex: Executable bit. If 1 code in this segment can be executed, ie. a code

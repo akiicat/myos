@@ -56,8 +56,8 @@ class GlobalDescriptorTable {
     GlobalDescriptorTable();
     ~GlobalDescriptorTable();
 
-    uint16_t CodeSegmentSelector();
-    uint16_t DataSegmentSelector();
+    uint16_t CodeSegmentSelector(); // Get GDT code segment
+    uint16_t DataSegmentSelector(); // Get GDT data segment
 };
 
 #endif
