@@ -71,8 +71,8 @@ GlobalDescriptorTable::GlobalDescriptorTable() :
 {
   uint32_t i[2];
 
-  i[0] = (uint32_t)this;
-  i[1] = sizeof(GlobalDescriptorTable) << 16; // 65535 entries = 2 ^ 19 bytes
+  i[1] = (uint32_t)this;
+  i[0] = sizeof(GlobalDescriptorTable) << 16; // 65535 entries = 2 ^ 19 bytes
 
   // Telling the CPU where the table stands
   //   lgdt: load global descriptor table
