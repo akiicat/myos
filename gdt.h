@@ -38,8 +38,12 @@ class GlobalDescriptorTable {
         uint8_t type;
         uint8_t flags_limit_hi;
         uint8_t base_vhi;
+
       public:
+        // Initialize Segment Table
         SegmentDescriptor(uint32_t base, uint32_t limit, uint8_t type);
+
+        // Get Segment Table detail
         uint32_t Base();
         uint32_t Limit();
 
@@ -47,8 +51,13 @@ class GlobalDescriptorTable {
       // 叫compiler不要為我們做對齊的最佳化
     } __attribute__((packed));
 
+  private:
+
+    // for the segment table security
     SegmentDescriptor nullSegmentSelector;
     SegmentDescriptor unusedSegmentSelector;
+
+    // the code segment and data segment should be placed in LDT
     SegmentDescriptor codeSegmentSelector;
     SegmentDescriptor dataSegmentSelector;
 
@@ -56,8 +65,9 @@ class GlobalDescriptorTable {
     GlobalDescriptorTable();
     ~GlobalDescriptorTable();
 
-    uint16_t CodeSegmentSelector(); // Get GDT code segment
-    uint16_t DataSegmentSelector(); // Get GDT data segment
+    // This code is supposed to be give us the `offset` of the code segment descriptor and one for data segment descriptor
+    uint16_t CodeSegmentSelector();
+    uint16_t DataSegmentSelector();
 };
 
 #endif
