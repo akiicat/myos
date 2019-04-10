@@ -2,7 +2,7 @@
 
 .section .text
 
-.extern _ZN16InterruptManager15handleInterruptEhj
+.extern _ZN16InterruptManager15HandleInterruptEhj
 .global _ZN16InterruptManager22IgnoreInterruptRequestEv
 
 # interrupt service routines
@@ -36,7 +36,7 @@ int_bottom:
   # basically jump into the handle interrupt function
   pushl %esp
   push (interruptnumber)
-  call _ZN16InterruptManager15handleInterruptEhj
+  call _ZN16InterruptManager15HandleInterruptEhj
 
   # add $5, %esp   # pop the old stack pointer
   movl %eax, %esp  # overwrite esp with the result value from the handleInterrupt function

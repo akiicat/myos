@@ -13,11 +13,15 @@ class InterruptHandler {
     uint8_t interruptNumber;
     InterruptManager* interruptManager;
 
+  public:
     InterruptHandler(uint8_t interruptNumber, InterruptManager* interruptManager);
     ~InterruptHandler();
 
-  public:
-    uint32_t HandleInterrupt(uint32_t esp);
+    // must virtual mode:
+    //   when inherit this class, the parent's function will be overwrited by the child's one.
+    // if not add `virtual` on declaration:
+    //   The parent's function will not be overwirted by the child's function.
+    virtual uint32_t HandleInterrupt(uint32_t esp);
 
 };
 
@@ -172,7 +176,7 @@ class InterruptManager {
     void Activate();
     void Deactivate();
 
-    static uint32_t handleInterrupt(uint8_t interruptNumber, uint32_t esp);
+    static uint32_t HandleInterrupt(uint8_t interruptNumber, uint32_t esp);
 
     // call the non-static function to handle interrupt ActiveInterruptManager
     uint32_t DoHandleInterrupt(uint8_t interruptNumber, uint32_t esp);

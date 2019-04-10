@@ -106,7 +106,7 @@ InterruptManager::InterruptManager(GlobalDescriptorTable* gdt)
 }
 
 InterruptManager::~InterruptManager() {
-
+  Deactivate();
 }
 
 void InterruptManager::Activate() {
@@ -124,17 +124,15 @@ void InterruptManager::Deactivate() {
 
   if (ActiveInterruptManager == this) {
     ActiveInterruptManager = 0;
-    asm("cli"); // sti: start interrupts
+    asm("cli");
   }
 }
 
-uint32_t InterruptManager::handleInterrupt(uint8_t interruptNumber, uint32_t esp) {
+uint32_t InterruptManager::HandleInterrupt(uint8_t interruptNumber, uint32_t esp) {
 
   if (ActiveInterruptManager != 0) {
     return ActiveInterruptManager->DoHandleInterrupt(interruptNumber, esp);
   }
-
-  printf(" INTERUPT");
 
   // return the same stack pointer for disable task switching
   // since we don't have multiple processes
@@ -160,7 +158,6 @@ uint32_t InterruptManager::DoHandleInterrupt(uint8_t interruptNumber, uint32_t e
       picSlaveCommand.Write(0x20);
     }
   }
-
 
   return esp;
 }
