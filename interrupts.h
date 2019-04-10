@@ -17,7 +17,7 @@ class InterruptHandler {
     ~InterruptHandler();
 
   public:
-    uint32_t HandleInterrupt(uint32_t esp);:w
+    uint32_t HandleInterrupt(uint32_t esp);
 
 };
 
@@ -28,6 +28,8 @@ class InterruptManager {
 
     // put a current interrupt manager here to ensure we only have one active interrupte mananger
     static InterruptManager* ActiveInterruptManager;
+
+    InterruptHandler* handlers[256];
 
     /*
      * Interrupt Descriptor Table Entry is called Gate Descriptor
