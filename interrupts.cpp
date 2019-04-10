@@ -5,6 +5,8 @@ void printf(char* str);
 
 InterruptManager::GateDescriptor InterruptManager::interruptDescriptorTable[256];
 
+InterruptManager* InterruptManager::ActiveInterruptManager = 0;
+
 /* set entry to the interrupt ignore interrupt request
  *
  * DescriptorPrivilegeLevel: Ring 0, 1, 2, 3
@@ -90,14 +92,50 @@ InterruptManager::~InterruptManager() {
 }
 
 void InterruptManager::Activate() {
+
+  if (ActiveInterruptManager != 0) {
+    ActiveInterruptManager->Deactivate();
+  }
+
+  ActiveInterruptManager = this;
+
   asm("sti"); // sti: start interrupts
 }
 
+void InterruptManager::Deactivate() {
+
+  if (ActiveInterruptManager == this) {
+    ActiveInterruptManager = 0;
+    asm("cli"); // sti: start interrupts
+  }
+}
+
 uint32_t InterruptManager::handleInterrupt(uint8_t interruptNumber, uint32_t esp) {
+
+  if (ActiveInterruptManager != 0) {
+    return ActiveInterruptManager->DoHandleInterrupt(interruptNumber, esp);
+  }
 
   printf(" INTERUPT");
 
   // return the same stack pointer for disable task switching
   // since we don't have multiple processes
+  return esp;
+}
+
+uint32_t InterruptManager::DoHandleInterrupt(uint8_t interruptNumber, uint32_t esp) {
+
+  if (interruptNumber != 0x20) {
+    printf(" INTERUPT");
+  }
+
+  if (0x20 <= interruptNumber && interruptNumber < 0x30) {
+    picMasterCommand.Write(0x20);
+    if (0x28 <= interruptNumber) {
+      picSlaveCommand.Write(0x20);
+    }
+  }
+
+
   return esp;
 }

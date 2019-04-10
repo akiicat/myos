@@ -5,8 +5,30 @@
 #include "port.h"
 #include "gdt.h"
 
-class InterruptManager {
+
+class InterruptManager;
+
+class InterruptHandler {
   protected:
+    uint8_t interruptNumber;
+    InterruptManager* interruptManager;
+
+    InterruptHandler(uint8_t interruptNumber, InterruptManager* interruptManager);
+    ~InterruptHandler();
+
+  public:
+    uint32_t HandleInterrupt(uint32_t esp);:w
+
+};
+
+class InterruptManager {
+  friend class InterruptHandler;
+
+  protected:
+
+    // put a current interrupt manager here to ensure we only have one active interrupte mananger
+    static InterruptManager* ActiveInterruptManager;
+
     /*
      * Interrupt Descriptor Table Entry is called Gate Descriptor
      *
@@ -146,8 +168,12 @@ class InterruptManager {
     ~InterruptManager();
 
     void Activate();
+    void Deactivate();
 
     static uint32_t handleInterrupt(uint8_t interruptNumber, uint32_t esp);
+
+    // call the non-static function to handle interrupt ActiveInterruptManager
+    uint32_t DoHandleInterrupt(uint8_t interruptNumber, uint32_t esp);
 
     static void IgnoreInterruptRequest();
     static void HandleInterruptRequest0x00(); // timer interrupt
