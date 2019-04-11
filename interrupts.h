@@ -184,6 +184,7 @@ class InterruptManager {
     static void IgnoreInterruptRequest();
     static void HandleInterruptRequest0x00(); // timer interrupt
     static void HandleInterruptRequest0x01(); // keyboard interrupt
+    static void HandleInterruptRequest0x0C(); // mouse interrupt
 };
 
 #endif

@@ -80,6 +80,7 @@ InterruptManager::InterruptManager(GlobalDescriptorTable* gdt)
   // The first Programmable Interrupt Controller (PIC)
   SetInterruptDescriptorTableEntry(0x20, CodeSegment, &HandleInterruptRequest0x00, 0, IDT_INTERRUPT_GATE); // timer
   SetInterruptDescriptorTableEntry(0x21, CodeSegment, &HandleInterruptRequest0x01, 0, IDT_INTERRUPT_GATE); // keyboard
+  SetInterruptDescriptorTableEntry(0x2C, CodeSegment, &HandleInterruptRequest0x0C, 0, IDT_INTERRUPT_GATE); // mouse
 
   picMasterCommand.Write(0x11);
   picSlaveCommand.Write(0x11);

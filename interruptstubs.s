@@ -20,8 +20,9 @@ _ZN16InterruptManager26HandleInterruptRequest\num\()Ev:
   jmp int_bottom
 .endm
 
-HandleInterruptRequest 0x00   # timer
-HandleInterruptRequest 0x01   # keyboard
+HandleInterruptRequest 0x00   # 0x20 timer
+HandleInterruptRequest 0x01   # 0x21 keyboard
+HandleInterruptRequest 0x0C   # 0x2C mouse
 
 int_bottom:
 
