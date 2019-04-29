@@ -2,6 +2,7 @@
 #include "types.h"
 #include "gdt.h"
 #include "interrupts.h"
+#include "driver.h"
 #include "keyboard.h"
 #include "mouse.h"
 
@@ -54,6 +55,14 @@ void printf(char *str) {
   }
 }
 
+void printfHex(uint8_t key) {
+  char* foo = "00";
+  char* hex = "0123456789ABCDEF";
+  foo[0] = hex[(key >> 4) & 0x0F];
+  foo[1] = hex[key & 0x0F];
+  printf(foo);
+}
+
 // Write a custom contructor
 typedef void (*constructor)();
 extern "C" constructor start_ctors;
@@ -66,14 +75,25 @@ extern "C" void callConstructors() {
 
 
 extern "C" void kernelMain(void *multiboot_structure, uint16_t magicnumber) {
-  printf("Hello World!");
+  printf("Hello World!\n");
 
   GlobalDescriptorTable gdt;
   InterruptManager interrupts(&gdt);
 
-  KeyboardDriver keyboard(&interrupts);
-  MouseDriver mouse(&interrupts);
+  printf("Initializing Hardware, Stage 1\n");
 
+  DriverManager drvManager;
+
+  KeyboardDriver keyboard(&interrupts);
+  drvManager.AddDriver(&keyboard);
+
+  MouseDriver mouse(&interrupts);
+  drvManager.AddDriver(&mouse);
+
+  printf("Initializing Hardware, Stage 2\n");
+  drvManager.ActivateAll();
+
+  printf("Initializing Hardware, Stage 3\n");
   interrupts.Activate();
 
   while(1);

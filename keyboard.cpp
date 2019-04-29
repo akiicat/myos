@@ -1,12 +1,20 @@
 #include "keyboard.h"
 
 void printf(char*);
+void printfHex(uint8_t);
 
 KeyboardDriver::KeyboardDriver(InterruptManager* manager)
 : InterruptHandler(0x21, manager),
   dataport(0x60),
   commandport(0x64)
 {
+}
+
+KeyboardDriver::~KeyboardDriver() {
+
+}
+
+void KeyboardDriver::Activate() {
   while(commandport.Read() & 0x1) {
     dataport.Read();
   }
@@ -20,10 +28,6 @@ KeyboardDriver::KeyboardDriver(InterruptManager* manager)
   dataport.Write(status);
 
   dataport.Write(0xF4);
-}
-
-KeyboardDriver::~KeyboardDriver() {
-
 }
 
 uint32_t KeyboardDriver::HandleInterrupt(uint32_t esp) {
@@ -81,13 +85,8 @@ uint32_t KeyboardDriver::HandleInterrupt(uint32_t esp) {
 
 
       default: 
-        char* foo = "KEYBOARD 0x00";
-        char* hex = "0123456789ABCDEF";
-        foo[11] = hex[(key >> 4) & 0x0F];
-        foo[12] = hex[key & 0x0F];
-        printf(foo);
-        
-
+        printf("KEYBOARD 0x");
+        printfHex(key);
     }
   }
 
