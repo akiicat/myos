@@ -64,11 +64,50 @@ void printfHex(uint8_t key) {
 }
 
 class PrintfKeyboardEventHandler : public KeyboardEventHandler {
+    int8_t x, y;
   public:
     void OnKeyDown(char c) {
       char* foo = " ";
       foo[0] = c;
       printf(foo);
+    }
+};
+
+class MouseToConsole : public MouseEventHandler {
+    int8_t x, y;
+  public:
+    MouseToConsole() {
+      // initialize the cursor
+      static uint16_t * VideoMemory = (uint16_t *) 0xb8000;
+      x = 40;
+      y = 12;
+      VideoMemory[80 * y + x] = ((VideoMemory[80 * y + x] & 0xF000) >> 4)
+                              | ((VideoMemory[80 * y + x] & 0x0F00) << 4)
+                              |  (VideoMemory[80 * y + x] & 0x00FF);
+    }
+
+    void OnMouseMove(int xoffset, int yoffset) {
+      // display mouse on the screen
+      static uint16_t * VideoMemory = (uint16_t *) 0xb8000;
+
+      // flip back the old position to the original state
+      VideoMemory[80 * y + x] = ((VideoMemory[80 * y + x] & 0xF000) >> 4)
+                              | ((VideoMemory[80 * y + x] & 0x0F00) << 4)
+                              | ((VideoMemory[80 * y + x] & 0x00FF));
+
+      // move the cursor
+      x += xoffset;
+      if (x < 0) x = 0;
+      if (x >= 80) x = 79;
+
+      y += yoffset;
+      if (y < 0) y = 0;
+      if (y >= 25) y = 24;
+
+      // flip the new position
+      VideoMemory[80 * y + x] = ((VideoMemory[80 * y + x] & 0xF000) >> 4)
+                              | ((VideoMemory[80 * y + x] & 0x0F00) << 4)
+                              | ((VideoMemory[80 * y + x] & 0x00FF));
     }
 };
 
@@ -97,7 +136,8 @@ extern "C" void kernelMain(void *multiboot_structure, uint16_t magicnumber) {
   KeyboardDriver keyboard(&interrupts, &kbhandler);
   drvManager.AddDriver(&keyboard);
 
-  MouseDriver mouse(&interrupts);
+  MouseToConsole mousehandler;
+  MouseDriver mouse(&interrupts, &mousehandler);
   drvManager.AddDriver(&mouse);
 
   printf("Initializing Hardware, Stage 2\n");
