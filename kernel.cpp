@@ -63,6 +63,15 @@ void printfHex(uint8_t key) {
   printf(foo);
 }
 
+class PrintfKeyboardEventHandler : public KeyboardEventHandler {
+  public:
+    void OnKeyDown(char c) {
+      char* foo = " ";
+      foo[0] = c;
+      printf(foo);
+    }
+};
+
 // Write a custom contructor
 typedef void (*constructor)();
 extern "C" constructor start_ctors;
@@ -84,7 +93,8 @@ extern "C" void kernelMain(void *multiboot_structure, uint16_t magicnumber) {
 
   DriverManager drvManager;
 
-  KeyboardDriver keyboard(&interrupts);
+  PrintfKeyboardEventHandler kbhandler;
+  KeyboardDriver keyboard(&interrupts, &kbhandler);
   drvManager.AddDriver(&keyboard);
 
   MouseDriver mouse(&interrupts);
