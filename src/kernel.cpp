@@ -1,10 +1,16 @@
 
-#include "types.h"
-#include "gdt.h"
-#include "interrupts.h"
-#include "driver.h"
-#include "keyboard.h"
-#include "mouse.h"
+#include <common/types.h>
+#include <gdt.h>
+#include <hardwarecommunication/interrupts.h>
+#include <drivers/driver.h>
+#include <drivers/keyboard.h>
+#include <drivers/mouse.h>
+
+using namespace myos;
+using namespace myos::common;
+using namespace myos::drivers;
+using namespace myos::hardwarecommunication;
+
 
 // 將 string 寫到特定的記憶體位置 0xb8000
 // 顯示卡則會去此位置抓取值，將文字 render 到螢幕上

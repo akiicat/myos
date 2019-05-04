@@ -49,7 +49,10 @@
  *
  */
 
-#include "gdt.h"
+#include <gdt.h>
+
+using namespace myos;
+using namespace myos::common;
 
 /* What should I put in my GDT?
  *

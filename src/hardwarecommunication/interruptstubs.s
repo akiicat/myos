@@ -2,20 +2,20 @@
 
 .section .text
 
-.extern _ZN16InterruptManager15HandleInterruptEhj
-.global _ZN16InterruptManager22IgnoreInterruptRequestEv
+.extern _ZN4myos21hardwarecommunication16InterruptManager15HandleInterruptEhj
+.global _ZN4myos21hardwarecommunication16InterruptManager22IgnoreInterruptRequestEv
 
 # interrupt service routines
 .macro HandleException num
-.global _ZN16InterruptManager26HandleException\num\()Ev
-_ZN16InterruptManager26HandleException\num\()Ev:
+.global _ZN4myos21hardwarecommunication16InterruptManager26HandleException\num\()Ev
+_ZN4myos21hardwarecommunication16InterruptManager26HandleException\num\()Ev:
   movb $\num, (interruptnumber)
   jmp int_bottom
 .endm
 
 .macro HandleInterruptRequest num
-.global _ZN16InterruptManager26HandleInterruptRequest\num\()Ev
-_ZN16InterruptManager26HandleInterruptRequest\num\()Ev:
+.global _ZN4myos21hardwarecommunication16InterruptManager26HandleInterruptRequest\num\()Ev
+_ZN4myos21hardwarecommunication16InterruptManager26HandleInterruptRequest\num\()Ev:
   movb $\num + IRQ_BASE, (interruptnumber)
   jmp int_bottom
 .endm
@@ -37,7 +37,7 @@ int_bottom:
   # basically jump into the handle interrupt function
   pushl %esp
   push (interruptnumber)
-  call _ZN16InterruptManager15HandleInterruptEhj
+  call _ZN4myos21hardwarecommunication16InterruptManager15HandleInterruptEhj
 
   # add $5, %esp   # pop the old stack pointer
   movl %eax, %esp  # overwrite esp with the result value from the handleInterrupt function
@@ -48,7 +48,7 @@ int_bottom:
   popl %ds
   popa
 
-_ZN16InterruptManager22IgnoreInterruptRequestEv:
+_ZN4myos21hardwarecommunication16InterruptManager22IgnoreInterruptRequestEv:
   # at the end of this, we need to tell the porcess okay
   # we are finished handling the interrupts so you can return to what you were doing before
   # or if we have switched the stack then it will jump it will work on the diffreent process
