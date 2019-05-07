@@ -71,8 +71,12 @@ void PeripheralComponentInterconnectController::SelectDrivers(DriverManager* dri
 
         PeripheralComponentInterconnectDeviceDescriptor dev = GetDeviceDescriptor(bus, device, function);
 
+        // one device can actually have a gap between functions
+        // so it can have function 1 and function 5, but no function 2 and 3
+        // `break` statement prevent us from finding the functions that behind after this gap
+        // so we have to make this `continue` instead
         if (dev.vendor_id == 0x0000 || dev.vendor_id == 0xFFFF) {
-          break;
+          continue;
         }
 
         printf("PCI BUS ");
