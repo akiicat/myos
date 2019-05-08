@@ -156,6 +156,9 @@ BaseAddressRegister PeripheralComponentInterconnectController::GetBaseAddressReg
 
   uint32_t temp;
 
+  // Memory Space BAR Layout:
+  // 31                         4 3          3 2  1 0      0
+  // 16-Byte Aligned Base Address	Prefetchable Type Always 0
   if (result.type == MemoryMapping) {
 
 
@@ -175,7 +178,7 @@ BaseAddressRegister PeripheralComponentInterconnectController::GetBaseAddressReg
       // this is an important information because the zeros up there
       // determine a limit on how big this memory mapping is allowed to be
       //
-      // 31                         4 3          3 2  1 0
+      // 31                         4 3          3 2  1 0      0
       // 16-Byte Aligned Base Address	Prefetchable Type Always 0
       // 
       // if let's say if the first 16 bits (31 - 16) are all at zero
@@ -196,6 +199,10 @@ BaseAddressRegister PeripheralComponentInterconnectController::GetBaseAddressReg
 
     result.prefetchable = ((bar_value >> 3) & 0x1) == 0x1;
   }
+
+  // I/O Space BAR Layout
+  // 31                        2 1      1 0      0
+  // 4-Byte Aligned Base Address Reserved Always 1
   else { // InputOutput
     // set the address to the bar_value but cancel the last two bit
     result.address = (uint8_t*)(bar_value & ~0x3);
