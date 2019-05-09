@@ -165,13 +165,7 @@ extern "C" void kernelMain(void *multiboot_structure, uint16_t magicnumber) {
 
 
   vga.SetMode(320, 200, 8);
-
-  // draw a blue rectangle
-  for (int32_t y = 0; y < 200; y++) {
-    for (int32_t x = 0; x < 320; x++) {
-      vga.PutPixel(x, y, 0x00, 0x00, 0xA8);
-    }
-  }
+  vga.FillRectangle(0, 0, 320, 200, 0x00, 0x00, 0xA8);
 
   while(1);
 }
