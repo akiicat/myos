@@ -68,7 +68,9 @@ uint32_t MouseDriver::HandleInterrupt(uint32_t esp) {
 
   if (offset == 0) {
     if (buffer[1] != 0 || buffer[2] != 0) {
-      handler->OnMouseMove(buffer[1], -buffer[2]);
+      // with the mouse cursor in text mode is worked
+      // but for the desktop, I will just cast this to int before passing these to the event handler
+      handler->OnMouseMove((int)buffer[1], -(int)buffer[2]);
     }
 
     for (uint8_t i = 0; i < 3; i++) {
