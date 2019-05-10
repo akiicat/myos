@@ -1,4 +1,3 @@
-
 #include <common/types.h>
 #include <gdt.h>
 #include <hardwarecommunication/interrupts.h>
@@ -7,11 +6,16 @@
 #include <drivers/keyboard.h>
 #include <drivers/mouse.h>
 #include <drivers/vga.h>
+#include <gui/desktop.h>
+#include <gui/window.h>
+
+#define GRAPHICSMODE
 
 using namespace myos;
 using namespace myos::common;
 using namespace myos::drivers;
 using namespace myos::hardwarecommunication;
+using namespace myos::gui;
 
 
 // 將 string 寫到特定的記憶體位置 0xb8000
@@ -139,15 +143,26 @@ extern "C" void kernelMain(void *multiboot_structure, uint16_t magicnumber) {
   printf("Initializing Hardware, Stage 1\n");
 
 
+#ifdef GRAPHICSMODE
+  Desktop desktop(320, 200, 0x00, 0x00, 0xA8);
+#endif
 
   DriverManager drvManager;
 
+#ifdef GRAPHICSMODE
+  KeyboardDriver keyboard(&interrupts, &desktop);
+#else
   PrintfKeyboardEventHandler kbhandler;
   KeyboardDriver keyboard(&interrupts, &kbhandler);
+#endif
   drvManager.AddDriver(&keyboard);
 
+#ifdef GRAPHICSMODE
+  MouseDriver mouse(&interrupts, &desktop);
+#else
   MouseToConsole mousehandler;
   MouseDriver mouse(&interrupts, &mousehandler);
+#endif
   drvManager.AddDriver(&mouse);
 
   PeripheralComponentInterconnectController PCIController;
@@ -155,19 +170,32 @@ extern "C" void kernelMain(void *multiboot_structure, uint16_t magicnumber) {
 
   VideoGraphicsArray vga;
 
-
-
   printf("Initializing Hardware, Stage 2\n");
   drvManager.ActivateAll();
 
   printf("Initializing Hardware, Stage 3\n");
+
+#ifdef GRAPHICSMODE
+  vga.SetMode(320, 200, 8);
+
+  Window win1(&desktop, 10, 10, 20, 20, 0xA8, 0x00, 0x00);
+  desktop.AddChild(&win1);
+  Window win2(&desktop, 40, 15, 30, 30, 0x00, 0xA8, 0x00);
+  desktop.AddChild(&win2);
+#endif
+
+  // activate the interrupts which really be the last thing we do
   interrupts.Activate();
 
-
-  vga.SetMode(320, 200, 8);
-  vga.FillRectangle(0, 0, 320, 200, 0x00, 0x00, 0xA8);
-
-  // Instantiate a desktop object and have that take over the FillRectangle
-
-  while(1);
+  // when we start the multitasking,
+  // this loop will never be executed anymore
+  while(1) {
+#ifdef GRAPHICSMODE
+    // draw the desktop in the loop
+    //
+    // this is after we activate it to interrupts
+    // so it's really not a good idea to redraw the desktop inside this loop
+    desktop.Draw(&vga);
+#endif
+  }
 }

@@ -64,13 +64,13 @@ uint32_t MouseDriver::HandleInterrupt(uint32_t esp) {
   if (handler == 0) return esp;
 
   buffer[offset] = dataport.Read();
-  offset = (offset + 1) %3;
+  offset = (offset + 1) % 3;
 
   if (offset == 0) {
     if (buffer[1] != 0 || buffer[2] != 0) {
       // with the mouse cursor in text mode is worked
       // but for the desktop, I will just cast this to int before passing these to the event handler
-      handler->OnMouseMove((int)buffer[1], -(int)buffer[2]);
+      handler->OnMouseMove((int8_t)buffer[1], -((int8_t)buffer[2]));
     }
 
     for (uint8_t i = 0; i < 3; i++) {

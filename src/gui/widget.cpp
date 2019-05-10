@@ -3,7 +3,8 @@
 using namespace myos::gui;
 using namespace myos::common;
 
-Widget::Widget(Widget* parent, int32_t x, int32_t y, int32_t w, int32_t h, int32_t r, int32_t g, int32_t b)
+Widget::Widget(Widget* parent, int32_t x, int32_t y, int32_t w, int32_t h, uint8_t r, uint8_t g, uint8_t b)
+  : KeyboardEventHandler()
 {
   this->parent = parent;
   this->x = x;
@@ -13,7 +14,7 @@ Widget::Widget(Widget* parent, int32_t x, int32_t y, int32_t w, int32_t h, int32
   this->r = r;
   this->g = g;
   this->b = b;
-  this->Focussable = Focussable;
+  this->Focussable = true;
 }
 
 Widget::~Widget() {
@@ -65,7 +66,7 @@ bool Widget::ContainsCoordinate(int32_t x, int32_t y) {
   // simpler way we'll just check if this x and y are larger than the x and y coordinates of the widget
   // and smaller than the coordinate plus width or height respectively
   return this->x <= x && x < this->x + this->w
-    && this->y <= y && y < this->y + this->h;
+      && this->y <= y && y < this->y + this->h;
 }
 
 void Widget::OnMouseUp(int32_t x, int32_t y, uint8_t button) {
@@ -74,7 +75,7 @@ void Widget::OnMouseUp(int32_t x, int32_t y, uint8_t button) {
 void Widget::OnMouseMove(int32_t oldx, int32_t oldy, int32_t newx, int32_t newy) {
 }
 
-CompositeWidget::CompositeWidget(Widget* parent, int32_t x, int32_t y, int32_t w, int32_t h, int32_t r, int32_t g, int32_t b)
+CompositeWidget::CompositeWidget(Widget* parent, int32_t x, int32_t y, int32_t w, int32_t h, uint8_t r, uint8_t g, uint8_t b)
   : Widget(parent, x, y, w, h, r, g, b)
 {
   focussedChild = 0;
@@ -125,8 +126,8 @@ void CompositeWidget::OnMouseDown(int32_t x, int32_t y, uint8_t button) {
   // because the children with smaller index are in front of the other ones
   for (int i = 0; i < numChildren; i++) {
     // pass the event to the child that contains the coordinate
-    if (children[i]->ContainsCoordinate(x - this->x, y -  this->y)) {
-      children[i]->OnMouseDown(x - this->x, y -  this->y, button);
+    if (children[i]->ContainsCoordinate(x - this->x, y - this->y)) {
+      children[i]->OnMouseDown(x - this->x, y - this->y, button);
 
       // If you have two children and one is in front of the other
       // then the front child is encountered first and should stop the iteration
@@ -140,8 +141,8 @@ void CompositeWidget::OnMouseDown(int32_t x, int32_t y, uint8_t button) {
 
 void CompositeWidget::OnMouseUp(int32_t x, int32_t y, uint8_t button) {
   for (int i = 0; i < numChildren; i++) {
-    if (children[i]->ContainsCoordinate(x - this->x, y -  this->y)) {
-      children[i]->OnMouseUp(x - this->x, y -  this->y, button);
+    if (children[i]->ContainsCoordinate(x - this->x, y - this->y)) {
+      children[i]->OnMouseUp(x - this->x, y - this->y, button);
       break;
     }
   }
@@ -162,10 +163,10 @@ void CompositeWidget::OnMouseMove(int32_t oldx, int32_t oldy, int32_t newx, int3
   // and otherwise you call something like OnMouseLeft on the first widget
   // and OnMouseEnter on the second widget
   for (int i = 0; i < numChildren; i++) {
-    if (children[i]->ContainsCoordinate(oldx - this->x, oldy -  this->y)) {
+    if (children[i]->ContainsCoordinate(oldx - this->x, oldy - this->y)) {
       // so I'm always subtracting the this.x and this.y,
       // turn the coordinates into relative coordinates
-      children[i]->OnMouseMove(oldx - this->x, oldy -  this->y, newx - this->x, newy - this->y);
+      children[i]->OnMouseMove(oldx - this->x, oldy - this->y, newx - this->x, newy - this->y);
       
       firstchild = i;
 
@@ -174,7 +175,7 @@ void CompositeWidget::OnMouseMove(int32_t oldx, int32_t oldy, int32_t newx, int3
   }
 
   for (int i = 0; i < numChildren; i++) {
-    if (children[i]->ContainsCoordinate(newx - this->x, newy -  this->y)) {
+    if (children[i]->ContainsCoordinate(newx - this->x, newy - this->y)) {
 
       // so if the MouseMove leaves the one element,
       // then that element gets only the first OnMouseMove end
@@ -184,7 +185,7 @@ void CompositeWidget::OnMouseMove(int32_t oldx, int32_t oldy, int32_t newx, int3
       // So If we move the mouse within the same widget,
       // it doesn't get the same event twice like this
       if (firstchild != i) 
-        children[i]->OnMouseMove(oldx - this->x, oldy -  this->y, newx - this->x, newy - this->y);
+        children[i]->OnMouseMove(oldx - this->x, oldy - this->y, newx - this->x, newy - this->y);
       break;
     }
   }

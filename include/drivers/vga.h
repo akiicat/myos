@@ -57,7 +57,7 @@ namespace myos {
         // this is supposed to be hidden from all those other things that draw on the screen
         //
         // the object that draw on the screen are not supposed to know that you have only 8-bit color depth in behind this
-        virtual void PutPixel(common::uint32_t x, common::uint32_t y, common::uint8_t r, common::uint8_t g, common::uint8_t b);
+        virtual void PutPixel(common::int32_t x, common::int32_t y, common::uint8_t r, common::uint8_t g, common::uint8_t b);
 
         // vga will be using an 8-bit version for now
         // so we cannot actually set a color like 24-bit version
@@ -66,7 +66,7 @@ namespace myos {
         //
         // make this method public for now
         // shouldn't be in the long run
-        virtual void PutPixel(common::uint32_t x, common::uint32_t y, common::uint8_t colorIndex);
+        virtual void PutPixel(common::int32_t x, common::int32_t y, common::uint8_t colorIndex);
 
 
         virtual void FillRectangle(common::uint32_t x, common::uint32_t y, common::uint32_t w, common::uint32_t h, common::uint8_t r, common::uint8_t g, common::uint8_t b);

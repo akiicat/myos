@@ -20,19 +20,20 @@ namespace myos {
 
         // to prevent writing color here
         // just hard code r, g, b
-        common::int32_t r;
-        common::int32_t g;
-        common::int32_t b;
+        common::uint8_t r;
+        common::uint8_t g;
+        common::uint8_t b;
 
         bool Focussable;
 
       public:
-        Widget(Widget* parent, common::int32_t x, common::int32_t y, common::int32_t w,
-            common::int32_t h, common::int32_t r, common::int32_t g, common::int32_t b);
+        Widget(Widget* parent,
+            common::int32_t x, common::int32_t y, common::int32_t w, common::int32_t h,
+            common::uint8_t r, common::uint8_t g, common::uint8_t b);
         ~Widget();
 
         virtual void GetFocus(Widget* widget);
-        virtual void ModelToScreen(common::int32_t& x, common::int32_t& y);
+        virtual void ModelToScreen(common::int32_t &x, common::int32_t &y);
         virtual bool ContainsCoordinate(common::int32_t x, common::int32_t y);
 
         virtual void Draw(common::GraphicsContext* gc);
@@ -51,8 +52,9 @@ namespace myos {
 
       public:
 
-        CompositeWidget(Widget* parent, common::int32_t x, common::int32_t y, common::int32_t w,
-            common::int32_t h, common::int32_t r, common::int32_t g, common::int32_t b);
+        CompositeWidget(Widget* parent,
+            common::int32_t x, common::int32_t y, common::int32_t w, common::int32_t h,
+            common::uint8_t r, common::uint8_t g, common::uint8_t b);
         ~CompositeWidget();
 
         virtual void GetFocus(Widget* widget);

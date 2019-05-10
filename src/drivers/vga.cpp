@@ -146,7 +146,19 @@ uint8_t* VideoGraphicsArray::GetFrameBufferSegment() {
   }
 }
 
-void VideoGraphicsArray::PutPixel(uint32_t x, uint32_t y, uint8_t colorIndex) {
+void VideoGraphicsArray::PutPixel(int32_t x, int32_t y, uint8_t colorIndex) {
+
+  // make sure the coordinates are legal
+  //
+  // for example if you move the mouse to the right of the screen
+  // then we try to draw the cross cursor and it's over beyond the screen
+  // and that's not really what we want
+  // because these pixels will just be drawn in the next line
+  // so we will just put security here
+  if (x < 0 || 320 <= x || y < 0 || 200 <= y) {
+    return;
+  }
+
   // asks the GetFrameBufferSegment where to put the pixel
   //
   // we haven't start the width and the height anywhere
@@ -167,7 +179,7 @@ uint8_t VideoGraphicsArray::GetColorIndex(uint8_t r, uint8_t g, uint8_t b) {
   return 0x00;
 }
 
-void VideoGraphicsArray::PutPixel(uint32_t x, uint32_t y, uint8_t r, uint8_t g, uint8_t b) {
+void VideoGraphicsArray::PutPixel(int32_t x, int32_t y, uint8_t r, uint8_t g, uint8_t b) {
   // call the other PutPixel(x, y, colorIntex)
   // with the same x, y but GetColorIndex for the RGB value
   PutPixel(x, y, GetColorIndex(r, g, b));
@@ -176,7 +188,7 @@ void VideoGraphicsArray::PutPixel(uint32_t x, uint32_t y, uint8_t r, uint8_t g, 
 void VideoGraphicsArray::FillRectangle(uint32_t x, uint32_t y, uint32_t w, uint32_t h, uint8_t r, uint8_t g, uint8_t b) {
   for (int32_t Y = y; Y < y + h; Y++) {
     for (int32_t X = x; X < x + w; X++) {
-      PutPixel(X, Y, 0x00, 0x00, 0xA8);
+      PutPixel(X, Y, r, g, b);
     }
   }
 }

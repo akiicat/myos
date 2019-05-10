@@ -17,7 +17,7 @@ namespace myos {
         virtual void OnActivate();
         virtual void OnMouseDown(myos::common::uint8_t button);
         virtual void OnMouseUp(myos::common::uint8_t button);
-        virtual void OnMouseMove(int xoffset, int yoffset);
+        virtual void OnMouseMove(int x, int y);
     };
 
     class MouseDriver : public myos::hardwarecommunication::InterruptHandler, public Driver {
