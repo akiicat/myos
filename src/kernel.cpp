@@ -167,5 +167,7 @@ extern "C" void kernelMain(void *multiboot_structure, uint16_t magicnumber) {
   vga.SetMode(320, 200, 8);
   vga.FillRectangle(0, 0, 320, 200, 0x00, 0x00, 0xA8);
 
+  // Instantiate a desktop object and have that take over the FillRectangle
+
   while(1);
 }

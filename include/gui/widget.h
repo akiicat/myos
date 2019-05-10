@@ -3,12 +3,13 @@
 
 #include <common/types.h>
 #include <common/graphicscontext.h>
+#include <drivers/keyboard.h>
 
 namespace myos {
 
   namespace gui {
 
-    class Widget {
+    class Widget :public myos::drivers::KeyboardEventHandler {
       protected:
         Widget* parent;
 
@@ -32,15 +33,12 @@ namespace myos {
 
         virtual void GetFocus(Widget* widget);
         virtual void ModelToScreen(common::int32_t& x, common::int32_t& y);
+        virtual bool ContainsCoordinate(common::int32_t x, common::int32_t y);
 
-        virtual void Draw(GraphicsContext* gc);
-        virtual void OnMouseDown(common::int32_t x, common::int32_t y);
-        virtual void OnMouseUp(common::int32_t x, common::int32_t y);
+        virtual void Draw(common::GraphicsContext* gc);
+        virtual void OnMouseDown(common::int32_t x, common::int32_t y, common::uint8_t button);
+        virtual void OnMouseUp(common::int32_t x, common::int32_t y, common::uint8_t button);
         virtual void OnMouseMove(common::int32_t oldx, common::int32_t oldy, common::int32_t newx, common::int32_t newy);
-
-        virtual void OnKeyDown(common::int32_t x, common::int32_t y);
-        virtual void OnKeyUp(common::int32_t x, common::int32_t y);
-
     };
 
     // CompositeWidget which will overwrite most of Wiget
@@ -59,13 +57,17 @@ namespace myos {
 
         virtual void GetFocus(Widget* widget);
 
-        virtual void Draw(GraphicsContext* gc);
-        virtual void OnMouseDown(common::int32_t x, common::int32_t y);
-        virtual void OnMouseUp(common::int32_t x, common::int32_t y);
+        // have a method to access child
+        // because the children are private and you shouldn't access it from outside
+        virtual bool AddChild(Widget* child);
+
+        virtual void Draw(common::GraphicsContext* gc);
+        virtual void OnMouseDown(common::int32_t x, common::int32_t y, common::uint8_t button);
+        virtual void OnMouseUp(common::int32_t x, common::int32_t y, common::uint8_t button);
         virtual void OnMouseMove(common::int32_t oldx, common::int32_t oldy, common::int32_t newx, common::int32_t newy);
 
-        virtual void OnKeyDown(common::int32_t x, common::int32_t y);
-        virtual void OnKeyUp(common::int32_t x, common::int32_t y);
+        virtual void OnKeyDown(char);
+        virtual void OnKeyUp(char);
     };
   }
 

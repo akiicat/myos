@@ -1,8 +1,10 @@
 #include <gui/widget.h>
 
 using namespace myos::gui;
+using namespace myos::common;
 
-Widget::Widget(Widget* parent, int32_t x, int32_t y, int32_t w, int32_t h, int32_t r, int32_t g, int32_t b) {
+Widget::Widget(Widget* parent, int32_t x, int32_t y, int32_t w, int32_t h, int32_t r, int32_t g, int32_t b)
+{
   this->parent = parent;
   this->x = x;
   this->y = y;
@@ -52,32 +54,37 @@ void Widget::Draw(GraphicsContext* gc) {
   gc->FillRectangle(X, Y, w, h, r, g, b);
 }
 
-void Widget::OnMouseDown(int32_t x, int32_t y) {
+void Widget::OnMouseDown(int32_t x, int32_t y, uint8_t button) {
   // is the widget focusable? if it isn't then we don't call this
   if (Focussable) {
     GetFocus(this);
   }
 }
 
-void Widget::OnMouseUp(int32_t x, int32_t y) {
+bool Widget::ContainsCoordinate(int32_t x, int32_t y) {
+  // simpler way we'll just check if this x and y are larger than the x and y coordinates of the widget
+  // and smaller than the coordinate plus width or height respectively
+  return this->x <= x && x < this->x + this->w
+    && this->y <= y && y < this->y + this->h;
+}
+
+void Widget::OnMouseUp(int32_t x, int32_t y, uint8_t button) {
 }
 
 void Widget::OnMouseMove(int32_t oldx, int32_t oldy, int32_t newx, int32_t newy) {
 }
 
-void Widget::OnKeyDown(char* str) {
-}
-
-void Widget::OnKeyUp(char* str) {
-}
-
-CompositeWidget::CompositeWidget(Widget* parent, int32_t x, int32_t y, int32_t w, int32_t h, int32_t r, int32_t g, int32_t b) {
+CompositeWidget::CompositeWidget(Widget* parent, int32_t x, int32_t y, int32_t w, int32_t h, int32_t r, int32_t g, int32_t b)
+  : Widget(parent, x, y, w, h, r, g, b)
+{
   focussedChild = 0;
   numChildren = 0;
 }
 
 
-CompositeWidget::~CompositeWidget()
+CompositeWidget::~CompositeWidget() {
+
+}
 
 void CompositeWidget::GetFocus(Widget* widget) {
   // now the focussedChild is the widget
@@ -88,6 +95,20 @@ void CompositeWidget::GetFocus(Widget* widget) {
   }
 }
 
+bool CompositeWidget::AddChild(Widget* child) {
+  // if we already haves as many children as we can
+  // then we were just returned false
+  if (numChildren >= 100) {
+    return false;
+  }
+
+  // so this isn't exactly a threat safe but whatever
+  // right now everything is synchronous still anyways
+  children[numChildren++] = child;
+
+  return true;
+}
+
 void CompositeWidget::Draw(GraphicsContext* gc) {
   // first draw its own background
   Widget::Draw(gc);
@@ -95,17 +116,17 @@ void CompositeWidget::Draw(GraphicsContext* gc) {
   // here we will iterate through the children
   // this draws the children
   for (int i = numChildren-1; i >= 0; --i) {
-    children->Draw(gc);
+    children[i]->Draw(gc);
   }
 }
 
-void CompositeWidget::OnMouseDown(int32_t x, int32_t y) {
+void CompositeWidget::OnMouseDown(int32_t x, int32_t y, uint8_t button) {
   // here we actually need to go from zero to numChildren
   // because the children with smaller index are in front of the other ones
   for (int i = 0; i < numChildren; i++) {
     // pass the event to the child that contains the coordinate
     if (children[i]->ContainsCoordinate(x - this->x, y -  this->y)) {
-      children->OnMouseDown(x - this->x, y -  this->y);
+      children[i]->OnMouseDown(x - this->x, y -  this->y, button);
 
       // If you have two children and one is in front of the other
       // then the front child is encountered first and should stop the iteration
@@ -117,10 +138,10 @@ void CompositeWidget::OnMouseDown(int32_t x, int32_t y) {
 
 }
 
-void CompositeWidget::OnMouseUp(int32_t x, int32_t y) {
+void CompositeWidget::OnMouseUp(int32_t x, int32_t y, uint8_t button) {
   for (int i = 0; i < numChildren; i++) {
     if (children[i]->ContainsCoordinate(x - this->x, y -  this->y)) {
-      children->OnMouseUp(x - this->x, y -  this->y);
+      children[i]->OnMouseUp(x - this->x, y -  this->y, button);
       break;
     }
   }
@@ -129,17 +150,22 @@ void CompositeWidget::OnMouseUp(int32_t x, int32_t y) {
 void CompositeWidget::OnMouseMove(int32_t oldx, int32_t oldy, int32_t newx, int32_t newy) {
 
 
-  int firstchild = -1
+  int firstchild = -1;
 
   // with the OnMouseMove, we will do this twice
   //
   // once for the object that contains the old coordinate and
   // once for the object that contains the new coordinator
+  //
+  // thi more elegant way would be to check if they are the same
+  // and if they are the same, you call OnMouseMove
+  // and otherwise you call something like OnMouseLeft on the first widget
+  // and OnMouseEnter on the second widget
   for (int i = 0; i < numChildren; i++) {
     if (children[i]->ContainsCoordinate(oldx - this->x, oldy -  this->y)) {
       // so I'm always subtracting the this.x and this.y,
       // turn the coordinates into relative coordinates
-      children->OnMouseMove(oldx - this->x, oldy -  this->y, newx - this->x, newy - this->);
+      children[i]->OnMouseMove(oldx - this->x, oldy -  this->y, newx - this->x, newy - this->y);
       
       firstchild = i;
 
@@ -157,20 +183,22 @@ void CompositeWidget::OnMouseMove(int32_t oldx, int32_t oldy, int32_t newx, int3
       //
       // So If we move the mouse within the same widget,
       // it doesn't get the same event twice like this
-      if (firsthild != i) 
-        children->OnMouseMove(oldx - this->x, oldy -  this->y, newx - this->x, newy - this->);
+      if (firstchild != i) 
+        children[i]->OnMouseMove(oldx - this->x, oldy -  this->y, newx - this->x, newy - this->y);
       break;
     }
   }
 }
 
-void CompositeWidget::OnKeyDown(char* str) {
+// CompositeWidget overwrite the Widget OnKeyDown
+// so the CompositeWidget like the desktop can pass the key strike to  focussedChild
+void CompositeWidget::OnKeyDown(char str) {
   if (focussedChild != 0) {
     focussedChild->OnKeyDown(str);
   }
 }
 
-void CompositeWidget::OnKeyUp(char* str) {
+void CompositeWidget::OnKeyUp(char str) {
   if (focussedChild != 0) {
     focussedChild->OnKeyUp(str);
   }

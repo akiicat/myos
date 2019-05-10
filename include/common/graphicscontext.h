@@ -10,7 +10,7 @@ namespace myos {
     // I've just faked this now
     // so the class graphics context doesn't actually exist
     // it's just with VGA class that we had before
-    typedef GraphicsContext VideoGraphicsArray;
+    typedef myos::drivers::VideoGraphicsArray GraphicsContext;
 
   }
 
