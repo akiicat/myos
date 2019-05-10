@@ -4,7 +4,7 @@ using namespace myos;
 using namespace myos::common;
 using namespace myos::gui;
 
-Desktop::Desktop(int32_t w, int32_t h, uint32_t r, uint32_t g, uint32_t b)
+Desktop::Desktop(int32_t w, int32_t h, uint8_t r, uint8_t g, uint8_t b)
   // so the desktop constructor will go to the base constructor
   // assuming here that there's only a top-level desktop
   //

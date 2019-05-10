@@ -12,7 +12,7 @@ namespace myos {
     // but we will have to overwrite the methods from the MouseEventHandler to transate the mouse movements 
     // because from the mouse we only ge relative movements
     // and so the desktop will turn these relative movements into absolute positions of the mouse.
-    class Desktop : public CompositeWidget, public myos::drivers::MouseEventHandler {
+    class Desktop : public CompositeWidget, public drivers::MouseEventHandler {
       protected:
         // the Desktop will get mouse coordinates
         // but it's apparently not a good idea to hard code a mouse into the Desktop
@@ -22,7 +22,7 @@ namespace myos {
         common::uint32_t MouseY;
 
       public:
-        Desktop(common::int32_t w, common::int32_t h, common::uint32_t r, common::uint32_t g, common::uint32_t b);
+        Desktop(common::int32_t w, common::int32_t h, common::uint8_t r, common::uint8_t g, common::uint8_t b);
         ~Desktop();
 
         // The Desktop will be responsible for drawing the mouse
