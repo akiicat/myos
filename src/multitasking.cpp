@@ -80,7 +80,7 @@ bool TaskManager::AddTask(Task* task) {
   }
 
   // otherwise we put the task in the next free spot and return true
-  task[numTasks++] = task;
+  tasks[numTasks++] = task;
 
   return true;
 }
@@ -109,10 +109,4 @@ CPUState* TaskManager::Schedule(CPUState* cpustate) {
   // and then we return the new currentTask
   return tasks[currentTask]->cpustate;
 }
-
-// notice if we really do have tasks
-// the first time we run into this
-// when currentTask is minus one
-// then we don't store it away
-// (for the next time)
 

@@ -2,6 +2,7 @@
 #define __MYOS__HARDWARECOMMUNICATION__INTERRUPTS_H
 
 #include <gdt.h>
+#include <multitasking.h>
 #include <common/types.h>
 #include <hardwarecommunication/port.h>
 
@@ -37,6 +38,8 @@ namespace myos {
         static InterruptManager* ActiveInterruptManager;
 
         InterruptHandler* handlers[256];
+
+        TaskManager *taskManager;
 
         /*
          * Interrupt Descriptor Table Entry is called Gate Descriptor
@@ -173,7 +176,7 @@ namespace myos {
 
       public:
         // input GDT table
-        InterruptManager(myos::GlobalDescriptorTable* gdt);
+        InterruptManager(myos::GlobalDescriptorTable* gdt, myos::TaskManager* taskManager);
         ~InterruptManager();
 
         void Activate();

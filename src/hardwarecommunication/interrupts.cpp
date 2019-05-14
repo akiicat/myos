@@ -1,5 +1,6 @@
 #include <hardwarecommunication/interrupts.h>
 
+using namespace myos;
 using namespace myos::common;
 using namespace myos::hardwarecommunication;
 
@@ -56,12 +57,15 @@ void InterruptManager::SetInterruptDescriptorTableEntry(
   interruptDescriptorTable[interruptNumber].reserved = 0;
 }
 
-InterruptManager::InterruptManager(GlobalDescriptorTable* gdt)
+InterruptManager::InterruptManager(GlobalDescriptorTable* gdt, TaskManager* taskManager)
 : picMasterCommand(0x20),
   picMasterData(0x21),
   picSlaveCommand(0xA0),
   picSlaveData(0xA1)
 {
+  // the interrupt knows the taskManager
+  this->taskManager = taskManager;
+
   // Get GDT code segment
   uint16_t CodeSegment = gdt->CodeSegmentSelector();
   const uint8_t IDT_INTERRUPT_GATE = 0xE;
@@ -152,6 +156,17 @@ uint32_t InterruptManager::DoHandleInterrupt(uint8_t interruptNumber, uint32_t e
   else if (interruptNumber != 0x20) {
     printf("UNHANDLED INTERRUPT 0x");
     printfHex(interruptNumber);
+  }
+
+  // setting ESP again so we could actually remove that from the interrupt handlers
+  // but I will leave it there right now
+  if (interruptNumber == 0x20) {
+    // so if we have a timer interrupt
+    // then I will set ESP to the taskManager schedule
+    //
+    // you could fix the data types here now so that the uint32 becomes CPUState
+    // I think that would be a little bit more clean
+    esp = (uint32_t)taskManager->Schedule((CPUState*)esp);
   }
 
   if (0x20 <= interruptNumber && interruptNumber < 0x30) {

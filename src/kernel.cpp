@@ -8,6 +8,7 @@
 #include <drivers/vga.h>
 #include <gui/desktop.h>
 #include <gui/window.h>
+#include <multitasking.h>
 
 // #define GRAPHICSMODE
 
@@ -123,6 +124,9 @@ class MouseToConsole : public MouseEventHandler {
     }
 };
 
+void taskA() { while(true) { printf("A"); } }
+void taskB() { while(true) { printf("B"); } }
+
 // Write a custom contructor
 typedef void (*constructor)();
 extern "C" constructor start_ctors;
@@ -133,12 +137,20 @@ extern "C" void callConstructors() {
   }
 }
 
-
 extern "C" void kernelMain(void *multiboot_structure, uint16_t magicnumber) {
   printf("Hello World!\n");
 
   GlobalDescriptorTable gdt;
-  InterruptManager interrupts(&gdt);
+
+  // the reason why I instantiated it up there is because
+  // the interrupt handler will need to talk to the taskManager to do the scheduling
+  TaskManager taskManager;
+  Task task1(&gdt, taskA);
+  Task task2(&gdt, taskB);
+  taskManager.AddTask(&task1);
+  taskManager.AddTask(&task2);
+
+  InterruptManager interrupts(&gdt, &taskManager);
 
   printf("Initializing Hardware, Stage 1\n");
 

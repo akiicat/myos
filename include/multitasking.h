@@ -17,10 +17,10 @@ namespace myos {
     common::uint32_t ebp; // stack base pointer
 
     // elements that we have been pushing so far already
-    common::uint32_t gs;
-    common::uint32_t fs;
-    common::uint32_t es;
-    common::uint32_t ds;
+    // common::uint32_t gs;
+    // common::uint32_t fs;
+    // common::uint32_t es;
+    // common::uint32_t ds;
 
     // one integer for an error code
     // go into what that is for
