@@ -9,7 +9,7 @@ namespace myos {
 
   namespace gui {
 
-    class Widget :public myos::drivers::KeyboardEventHandler {
+    class Widget : public myos::drivers::KeyboardEventHandler {
       protected:
         Widget* parent;
 
