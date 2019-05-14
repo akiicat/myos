@@ -9,7 +9,7 @@
 #include <gui/desktop.h>
 #include <gui/window.h>
 
-#define GRAPHICSMODE
+// #define GRAPHICSMODE
 
 using namespace myos;
 using namespace myos::common;
