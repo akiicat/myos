@@ -185,6 +185,10 @@ extern "C" void kernelMain(void *multiboot_structure, uint16_t magicnumber) {
 #endif
 
   // activate the interrupts which really be the last thing we do
+  //
+  // because after that you just don't know when the processor jumps out of the kernel stack and into the tasks
+  // it never goes back to the kernel stack so everything after this interrupts activate then might not be executed anymore
+  // so that's why this really should be the last thing here
   interrupts.Activate();
 
   // when we start the multitasking,
@@ -195,6 +199,9 @@ extern "C" void kernelMain(void *multiboot_structure, uint16_t magicnumber) {
     //
     // this is after we activate it to interrupts
     // so it's really not a good idea to redraw the desktop inside this loop
+    //
+    // that is why this desktop draw here will break when we go into multitasking
+    // and then you should just have a different task for the redrawing here
     desktop.Draw(&vga);
 #endif
   }
