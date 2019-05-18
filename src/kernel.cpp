@@ -1,5 +1,6 @@
 #include <common/types.h>
 #include <gdt.h>
+#include <memorymanagement.h>
 #include <hardwarecommunication/interrupts.h>
 #include <hardwarecommunication/pci.h>
 #include <drivers/driver.h>
@@ -142,13 +143,59 @@ extern "C" void kernelMain(void *multiboot_structure, uint16_t magicnumber) {
 
   GlobalDescriptorTable gdt;
 
+  // instantiate one
+  // the question really is what values do we pass here
+  // so I will just hard code this to start at 10MB
+  // but what should we use as the size
+  // we have given the virtaul machine 64 MB so we could use just 54 MB as size here
+  // but that wouldn't be protable so what I'm going to do instead
+  // as far as I know there is a BIOS interrupt which will give you the size of the memory but I really
+  // don't want to got into interrupts inside the C++ code
+  // so there's actually a better way to get this
+  //
+  // so here's a situation is this
+  // we are getting this pointer to the multi boot structure from grub right
+  // and so far we haven't done anything with it
+  // but when you look into the multibook.h from the group project also known as linux
+  // (https://www.gnu.org/software/grub/manual/multiboot/html_node/multiboot_002eh.html)
+  // then you will find this structure here the multiboot_info
+  // and there you see how this data is structured
+  // so you could just copy that multiboot.h and include it
+  // and then you could use multiboot_info pointer instead of void pointer
+  //
+  // is I'll take this pointer to the multiboot_structure at 8 bytes and
+  // cast the result to in you 32 pointer
+  uint32_t *memupper = (uint32_t*)(((size_t)multiboot_structure) + 8);
+
+  // hard coding heap to 10MB
+  size_t heap = 10*1024*1024;
+
+  // and here as size I will just take the content of that pointer
+  // multiply it with 1024 because it is in kilobytes
+  // and I will substruct the address where the heap starts
+  // and I will also substract 10 kilobytes of padding behind the heap
+  MemoryManager memoryManager(heap, (*memupper)*1024 - heap - 10*1024);
+  printf("heap: 0x");
+  printfHex((heap >> 24) & 0xFF);
+  printfHex((heap >> 16) & 0xFF);
+  printfHex((heap >>  8) & 0xFF);
+  printfHex((heap >>  0) & 0xFF);
+
+  void* allocated = memoryManager.malloc(1024);
+  printf("\nallocated: 0x");
+  printfHex(((size_t)allocated >> 24) & 0xFF);
+  printfHex(((size_t)allocated >> 16) & 0xFF);
+  printfHex(((size_t)allocated >>  8) & 0xFF);
+  printfHex(((size_t)allocated >>  0) & 0xFF);
+  printf("\n");
+
   // the reason why I instantiated it up there is because
   // the interrupt handler will need to talk to the taskManager to do the scheduling
   TaskManager taskManager;
-  Task task1(&gdt, taskA);
-  Task task2(&gdt, taskB);
-  taskManager.AddTask(&task1);
-  taskManager.AddTask(&task2);
+  // Task task1(&gdt, taskA);
+  // Task task2(&gdt, taskB);
+  // taskManager.AddTask(&task1);
+  // taskManager.AddTask(&task2);
 
   InterruptManager interrupts(&gdt, &taskManager);
 
