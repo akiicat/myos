@@ -74,17 +74,17 @@ void* MemoryManager::malloc(size_t size) {
   // +-------------------------------------------------------------------------------------+
   // |  result chunk  |        requested size          |    new chunk   |  new chunk size  |
   // +-------------------------------------------------------------------------------------+
-  //                 |                                  ^              |
+  //                 |                                  ^    (temp)    |
   //                 +------------> next ---------------+              +---------> next ----
   // 
   if (result->size >= size + sizeof(MemoryChunk) + 1) {
     // make a new chunk ane we put that after to the result
-    MemoryChunk *temp = (MemoryChunk*)((size_t)result + size + sizeof(MemoryChunk));
+    MemoryChunk *temp = (MemoryChunk*)((size_t)result + sizeof(MemoryChunk) + size);
 
     temp->allocated = false;
 
     // calculate the new chunk size: just cut off the new chunk and the size of requested
-    temp->size = result->size - size - sizeof(MemoryChunk);
+    temp->size = result->size - sizeof(MemoryChunk) - size;
     result->size = size;
 
     // modify pointer
@@ -163,3 +163,39 @@ void MemoryManager::free(void* ptr) {
   }
 }
 
+void* operator new(unsigned size) {
+  if (myos::MemoryManager::activeMemoryManager == 0) {
+    return 0;
+  }
+
+  return myos::MemoryManager::activeMemoryManager->malloc(size);
+}
+
+void* operator new[](unsigned size) {
+  if (myos::MemoryManager::activeMemoryManager == 0) {
+    return 0;
+  }
+
+  return myos::MemoryManager::activeMemoryManager->malloc(size);
+}
+
+// 
+void* operator new(unsigned size, void* ptr) {
+  return ptr;
+}
+
+void* operator new[](unsigned size, void* ptr) {
+  return ptr;
+}
+
+void operator delete(void* ptr) {
+  if (myos::MemoryManager::activeMemoryManager != 0) {
+    myos::MemoryManager::activeMemoryManager->free(ptr);
+  }
+}
+
+void operator delete[](void* ptr) {
+  if (myos::MemoryManager::activeMemoryManager != 0) {
+    myos::MemoryManager::activeMemoryManager->free(ptr);
+  }
+}

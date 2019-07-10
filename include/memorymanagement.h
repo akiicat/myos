@@ -32,5 +32,18 @@ namespace myos {
 
 }
 
+// self define new operator if you want to use malloc
+void* operator new(unsigned size);
+void* operator new[](unsigned size);
+
+// placement new operator
+// when you want to call a constructor explicitly on REM
+// that you have already allocated in any way
+void* operator new(unsigned size, void* ptr);
+void* operator new[](unsigned size, void* ptr);
+
+void operator delete(void* ptr);
+void operator delete[](void* ptr);
+
 #endif
 

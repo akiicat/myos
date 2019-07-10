@@ -216,6 +216,8 @@ BaseAddressRegister PeripheralComponentInterconnectController::GetBaseAddressReg
 
 Driver* PeripheralComponentInterconnectController::GetDriver(PeripheralComponentInterconnectDeviceDescriptor dev, InterruptManager* interrupts) {
 
+  Driver *driver = 0;
+
   // In reality of course you would have some version of
   // if you have access to the hard drvies
   // then you would just read from the hard drive a file which should have a name that corresponds to these values
@@ -226,6 +228,16 @@ Driver* PeripheralComponentInterconnectController::GetDriver(PeripheralComponent
     case 0x1022: // AMD
       switch(dev.device_id) {
         case 0x2000: // am79c973 driver
+          // you allocated a size of class you give here and then
+          // you have to check explicitly if this is 0
+          // only if it is not NULL you call the constructor explicitly
+          //
+          // implement amd_am79c973 for next commit
+          // driver = (amd_am79c973*)MemoryManager::activeMemoryManager->malloc(sizeof(amd_am79c973));
+          // if (driver != 0) {
+          //   new (driver) amd_am79c973(...);
+          // }
+
           printf("AMD am79c973 ");
           break;
       }
@@ -249,7 +261,7 @@ Driver* PeripheralComponentInterconnectController::GetDriver(PeripheralComponent
       break;
   }
 
-  return 0;
+  return driver;
 }
 
 PeripheralComponentInterconnectDeviceDescriptor PeripheralComponentInterconnectController::GetDeviceDescriptor(uint16_t bus, uint16_t device, uint16_t function) {

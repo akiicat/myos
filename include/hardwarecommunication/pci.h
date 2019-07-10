@@ -6,6 +6,8 @@
 #include <hardwarecommunication/port.h>
 #include <hardwarecommunication/interrupts.h>
 
+#include <memorymanagement.h>
+
 /* 
  * $ lspci -n
  * 00:00.0 0600: 8086:29a0 (rev 02)
