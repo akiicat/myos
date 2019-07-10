@@ -8,7 +8,7 @@ using namespace myos::hardwarecommunication;
 void printf(char*);
 void printfHex(uint8_t);
 
-InterruptHandler::InterruptHandler(uint8_t interruptNumber, InterruptManager* interruptManager) {
+InterruptHandler::InterruptHandler(InterruptManager* interruptManager, uint8_t interruptNumber) {
   this->interruptNumber = interruptNumber;
   this->interruptManager = interruptManager;
   interruptManager->handlers[interruptNumber] = this;
@@ -63,6 +63,8 @@ InterruptManager::InterruptManager(GlobalDescriptorTable* gdt, TaskManager* task
   picSlaveCommand(0xA0),
   picSlaveData(0xA1)
 {
+  this->hardwareInterruptOffset = 0x20;
+
   // the interrupt knows the taskManager
   this->taskManager = taskManager;
 
@@ -116,6 +118,10 @@ InterruptManager::InterruptManager(GlobalDescriptorTable* gdt, TaskManager* task
 
 InterruptManager::~InterruptManager() {
   Deactivate();
+}
+
+uint16_t InterruptManager::HardwareInterruptOffset() {
+    return hardwareInterruptOffset;
 }
 
 void InterruptManager::Activate() {

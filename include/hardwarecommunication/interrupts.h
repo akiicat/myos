@@ -18,7 +18,7 @@ namespace myos {
         InterruptManager* interruptManager;
 
       public:
-        InterruptHandler(myos::common::uint8_t interruptNumber, InterruptManager* interruptManager);
+        InterruptHandler(InterruptManager* interruptManager, myos::common::uint8_t interruptNumber);
         ~InterruptHandler();
 
         // must virtual mode:
@@ -160,6 +160,8 @@ namespace myos {
           myos::common::uint32_t base;
         } __attribute__((packed));
 
+        myos::common::uint16_t hardwareInterruptOffset;
+
         // set the entries in the interrupt descriptor table
         static void SetInterruptDescriptorTableEntry(
             myos::common::uint8_t interruptNumber,
@@ -178,6 +180,8 @@ namespace myos {
         // input GDT table
         InterruptManager(myos::GlobalDescriptorTable* gdt, myos::TaskManager* taskManager);
         ~InterruptManager();
+
+        myos::common::uint16_t HardwareInterruptOffset();
 
         void Activate();
         void Deactivate();

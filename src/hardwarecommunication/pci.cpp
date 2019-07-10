@@ -1,4 +1,5 @@
 #include <hardwarecommunication/pci.h>
+#include <drivers/amd_am79c973.h>
 
 using namespace myos::common;
 using namespace myos::drivers;
@@ -89,14 +90,12 @@ void PeripheralComponentInterconnectController::SelectDrivers(DriverManager* dri
           if (bar.address && (bar.type == InputOutput)) {
             dev.portBase = (uint32_t)bar.address;
           }
+        }
 
-          // if we actually get a driver then we will add the driver to the driverManager
-          Driver* driver = GetDriver(dev, interrupts);
-          if (driver != 0) {
-            driverManager->AddDriver(driver);
-          }
-
-
+        // if we actually get a driver then we will add the driver to the driverManager
+        Driver* driver = GetDriver(dev, interrupts);
+        if (driver != 0) {
+          driverManager->AddDriver(driver);
         }
 
         printf("PCI BUS ");
@@ -231,14 +230,13 @@ Driver* PeripheralComponentInterconnectController::GetDriver(PeripheralComponent
           // you allocated a size of class you give here and then
           // you have to check explicitly if this is 0
           // only if it is not NULL you call the constructor explicitly
-          //
-          // implement amd_am79c973 for next commit
-          // driver = (amd_am79c973*)MemoryManager::activeMemoryManager->malloc(sizeof(amd_am79c973));
-          // if (driver != 0) {
-          //   new (driver) amd_am79c973(...);
-          // }
+          driver = (amd_am79c973*)MemoryManager::activeMemoryManager->malloc(sizeof(amd_am79c973));
+          if (driver != 0) {
+            new (driver) amd_am79c973(&dev, interrupts);
+          }
 
-          printf("AMD am79c973 ");
+          printf("AMD am79c973");
+          return driver;
           break;
       }
       break;

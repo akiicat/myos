@@ -11,7 +11,7 @@ namespace myos {
         ~Driver();
 
         virtual void Activate();
-        int Reset();
+        virtual int Reset();
         void Deactivate();
     };
 
