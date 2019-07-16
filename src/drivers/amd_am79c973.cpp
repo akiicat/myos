@@ -5,6 +5,9 @@ using namespace myos::common;
 using namespace myos::drivers;
 using namespace myos::hardwarecommunication;
 
+void printf(char*);
+void printfHex(uint8_t);
+
 amd_am79c973::amd_am79c973(PeripheralComponentInterconnectDeviceDescriptor* dev, InterruptManager* interrupts)
 : Driver(),
   InterruptHandler(interrupts, dev->interrupt + interrupts->HardwareInterruptOffset()),
@@ -26,6 +29,7 @@ amd_am79c973::amd_am79c973(PeripheralComponentInterconnectDeviceDescriptor* dev,
   uint64_t MAC4 = MACAddress4Port.Read() % 256;
   uint64_t MAC5 = MACAddress4Port.Read() / 256;
 
+  // MAC address is big-endian encode so we just reverse it
   uint64_t MAC = MAC5 << 40
     | MAC4 << 32
     | MAC3 << 24
@@ -98,8 +102,6 @@ int amd_am79c973::Reset() {
   return 10;
 }
 
-void printf(char*);
-
 uint32_t amd_am79c973::HandleInterrupt(uint32_t esp) {
   printf("INTERRUPT FROM AMD am79c973\n");
 
@@ -110,7 +112,7 @@ uint32_t amd_am79c973::HandleInterrupt(uint32_t esp) {
   if ((temp & 0x2000) == 0x2000) printf("AMD am79c973 COLLISION ERROR\n"); // collision error
   if ((temp & 0x1000) == 0x1000) printf("AMD am79c973 MISSED FRAME\n"); // missed frame
   if ((temp & 0x0800) == 0x0800) printf("AMD am79c973 MEMORY ERROR\n"); // memory error
-  if ((temp & 0x0400) == 0x0400) printf("AMD am79c973 DATA RECEVED\n"); // data receved
+  if ((temp & 0x0400) == 0x0400) Receive(); // data receved
   if ((temp & 0x0200) == 0x0200) printf("AMD am79c973 DATA SENT\n"); // data sent
 
   // acknowledge
@@ -120,5 +122,99 @@ uint32_t amd_am79c973::HandleInterrupt(uint32_t esp) {
   if ((temp & 0x0100) == 0x0100) printf("AMD am79c973 INIT DONE\n"); // init done
 
   return esp;
+}
+
+void amd_am79c973::Send(uint8_t* buffer, int size) {
+  // get the number of currentSendBuffer
+  int sendDescriptor = currentSendBuffer;
+
+  // remove the currentSendBuffer cyclic to the next send buffer
+  // that we could write or send data from different tasks in parallel
+  currentSendBuffer = (currentSendBuffer + 1) % 8;
+
+  // send more than 1518 bytes at once (this is too large)
+  // then we'll just discard everything after that
+  // we shouldn't be trying to send more at once
+  // if we get a size larger thant that at this point made a mistake already
+  if (size > 1518) {
+    size = 1518;
+  }
+
+  // copy the data into the currentSendBuffer that we have selected here
+  // so we set the `src` pointer to the end of the data that we want to send
+  // and another `dst` pinter to the buffer where we want to write it
+  // move these two pointer to the end of the buffers
+  // `src` is the end of the `buffer`
+  // `dst` is the end of the `sendBufferDescr`
+  for (uint8_t *src = buffer + size - 1,
+      *dst = (uint8_t*)(sendBufferDescr[sendDescriptor].address + size - 1);
+      src >= buffer; src--, dst--) {
+    // copy the data from the `src` buffer to the `dst` buffer
+    *dst = *src;
+  }
+
+  // mark this buffer as in use
+  // it's not allowed to write anything else in there until it's it becomes available again
+  // with this we clear any error messages that have been there before
+  sendBufferDescr[sendDescriptor].avail = 0;
+  sendBufferDescr[sendDescriptor].flags2 = 0;
+
+  // encode the size of what we wnat to send and
+  // this here is the part that had this mistake in it
+  //
+  // See AMD am79c973 chip documentation page 186-188
+  // https://www.amd.com/system/files/TechDocs/20550.pdf
+  sendBufferDescr[sendDescriptor].flags = 0x8300F000
+    | ((uint16_t)((-size) & 0xFFF));
+
+  // this is a send command
+  // write the command to send the data into the zeroes register
+  registerAddressPort.Write(0);
+  registerDataPort.Write(0x48);
+
+
+}
+
+void amd_am79c973::Receive() {
+  printf("AMD am79c973 DATA RECEIVED\n");
+
+  // iterate through the receive buffers as long as we have received buffers that contain data
+  // in this loop, we move the currentRecvBuffer cyclic around
+  // until we find a received buffer that has no data
+  for (; (recvBufferDescr[currentRecvBuffer].flags & 0x80000000) == 0; currentRecvBuffer = (currentRecvBuffer + 1) % 8) {
+    // receive buffer that hold data
+    //
+    // The first line checks the Error Bit (ERR)
+    // The second line checks the Start-of-Packet(STP) and End-of-Packet(ENP) Bits
+    //
+    // See AMD am79c973 chip documentation page 184
+    // https://www.amd.com/system/files/TechDocs/20550.pdf
+    if (!(recvBufferDescr[currentRecvBuffer].flags & 0x40000000)
+        && (recvBufferDescr[currentRecvBuffer].flags & 0x03000000) == 0x03000000)
+    {
+      // read the size from the recvBufferDescr
+      uint32_t size = recvBufferDescr[currentRecvBuffer].flags & 0xFFF;
+
+      // if the size is larger than 64, which this is the size of an Ethernet II frame
+      // then remove the last four bytes
+      // because they are a checksum and we are not really interested in the tricks on at this point 
+      if (size > 64) { // remove checksum
+        size -= 4;
+      }
+
+      // now copy the address of the buffer and basically iterate over the data
+      // print what we have received
+      uint8_t* buffer = (uint8_t*)(recvBufferDescr[currentRecvBuffer].address);
+      for (int i = 0; i < size; i++) {
+        printfHex(buffer[i]);
+        printf(" ");
+      }
+
+      // in the end of the loop, we have finished handling this
+      // so you can have this back
+      recvBufferDescr[currentRecvBuffer].flags2 = 0;
+      recvBufferDescr[currentRecvBuffer].flags = 0x8000F7FF;
+    }
+  };
 }
 
