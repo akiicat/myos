@@ -4,6 +4,100 @@
 #include <hardwarecommunication/port.h>
 #include <common/types.h>
 
+// PCI settings for hard disk driver:
+// - class ID: 0x01
+// - subclass ID: 0x06 for SATA
+//
+// History of Hard Drive:
+//
+//   IDE hard dirve --> advance technology attachment (ATA) -->  Serial ATA (SATA)
+//                   ^                                       ^
+//         used the same as IDE                   commpatiable to ATA or AHCI (Advanced host controller interface)
+//
+// VirtualBox only offers AHCI when we include in SATA contoller
+// in our virtual machine. And in VirtualBox, we will have to
+// choose to add IDE controller not in SATA controller because if
+// we take SATA only have AHCI but we want to do IDE or ATA.
+//
+// Now there are two different ways of accessing a hard drive: PIO and DMA
+//
+// PIO (Programe Input-Output) that is relatively slow but
+// that is the one that we implemented because it's relatively simple.
+// The processor basically talks to the controller all the time
+// say "give me the next byte". That works but it's not fast
+// around 16 MB/sec which is really not much.
+//
+// The better way would be DMA (Direct memory Access). In DMA you
+// basically tell the controller "hey just write the data to this
+// memory location and give an interrupt when you're finished".
+// If you do it with DMA or Urtra DMA nowadays, you of course
+// that gives you much better performance because while the
+// controller is writing the data into the RAM, the processor is
+// free to do other things so that gives you really much better
+// performance, but it's also more complicated.
+//
+// PCI controllers are still relatively stadardize the port numbers,
+// interrupt numbers for hard drive.
+//
+//      PIO
+//     /   \
+//  28bit 48bit
+//
+// The PIO mode has 28 bits and 48 bits mode. These numbers just
+// say how many bits do you transfer to the device to request the
+// sector. Now you don't request every byte indiviually. You
+// request a bunch of bytes (512 bytes). 512 bytes is normally a
+// sector.
+//
+// If you have 512 bytes multipled with the 28 bit then you get
+// the 4 GB. You could not write files that larger than 4 GB.
+// That is the reason there were times. When you couldn't have
+// hard drive larger than 2 GB for the same reason. And you just
+// had one of the bits were used more other thins, so they used
+// signed integer, and you could only have 2 GB of hard drive.
+//
+// With 48 bits you can access up to 128 PB that's a bit more
+// then 4 GB, but we will be doing 28 bits because they are
+// basically the same things. They work very very similar.
+//
+// When you deal with hard drives, you will probably come across
+// the 3 more terms:
+// - cylinders
+// - heads
+// - sectors
+// Back in the time of the IDE, you probably know that hard
+// drives look like disc. They have several discs and several
+// read and write heads. The operating system basically had to
+// know the hard drives to take control. So the operating system 
+// would say "I want to talk to the cylinder number, the head
+// number, the sector number". But that is referred to
+// CHS (Cylinder Head Sector) addressing. So to select a sector
+// on a hard drive, you would have to transmit these three
+// values.
+//
+// But in the mean time, between IDE and ATA, they came up with
+// the better idea because it's not really good that you have
+// to know the geometry of the hard drive to be able to talk to it.
+// Nowadays, you have Soild-State Drive (SSD) and they don't even
+// have cylinders, heads and sectors. So, it would totally not
+// make sense to talk to a SSD in CHS addressing mode. What they
+// came up with is the Logical Block Address (LBA). That basically
+// just says "Here is a number I want to have the sector with that
+// that number". After that, it's the hard drives problem to
+// translate that LBA into CHS address. So it's not your problem
+// as the developer of an operating system. You shouldn't have to
+// deal with such technical details of our devices. That should
+// offer you an interface like a black box, but there is actually
+// a formula to call to translate between CHS addressing mode and
+// LBA addressing mode.
+// 
+// You look at the program `fdisk` on Linux. When you partition a
+// hard drive with that, the Master Boot Record (MBR) has a very
+// space for CHS addresses but also for LBA addresses. `fdisk`
+// writes both of them so it should be sufficient to only write
+// LBA. LBA and CHS are just address bytes in the Master Boot Record (MBR)
+// or in the BIOS Parameter Block (BPB)
+
 namespace myos {
 
   namespace drivers {
