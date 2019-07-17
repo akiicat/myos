@@ -7,6 +7,7 @@
 #include <drivers/keyboard.h>
 #include <drivers/mouse.h>
 #include <drivers/vga.h>
+#include <drivers/ata.h>
 #include <gui/desktop.h>
 #include <gui/window.h>
 #include <multitasking.h>
@@ -254,6 +255,22 @@ extern "C" void kernelMain(void *multiboot_structure, uint16_t magicnumber) {
   Window win2(&desktop, 40, 15, 30, 30, 0x00, 0xA8, 0x00);
   desktop.AddChild(&win2);
 #endif
+
+  // interrupt 14
+  AdvancedTechnologyAttachment ata0m(0x1F0, true); // master, portBase: 0x1F0
+  printf("ATA Primary Master: ");
+  ata0m.Identify();
+
+  AdvancedTechnologyAttachment ata0s(0x1F0, false); // slave
+  printf("ATA Primary Slave: ");
+  ata0s.Identify();
+
+  // interrupt 15
+  AdvancedTechnologyAttachment ata1m(0x170, true); // master, portBase: 0x1F0
+  AdvancedTechnologyAttachment ata1s(0x170, false); // slave
+
+  // third portBase: 0x1E8
+  // fourth portBase: 0x168
 
   // activate the interrupts which really be the last thing we do
   //

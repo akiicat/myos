@@ -41,7 +41,7 @@ Create new Virtual Machine
 Type: Other
 Version: Other/Unknown
 RAM: 64MB
-Hard Disk: Do not add a virutal hard disk
+Hard Disk: Add a virutal hard disk, VDI, dynamic size, 2GB, Primary Slave
 
 ```shell
 make run
