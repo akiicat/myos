@@ -34,20 +34,20 @@ namespace myos {
     public:
       class SegmentDescriptor {
         private:
-          myos::common::uint16_t limit_lo;
-          myos::common::uint16_t base_lo;
-          myos::common::uint8_t base_hi;
-          myos::common::uint8_t type;
-          myos::common::uint8_t flags_limit_hi;
-          myos::common::uint8_t base_vhi;
+          common::uint16_t limit_lo;
+          common::uint16_t base_lo;
+          common::uint8_t base_hi;
+          common::uint8_t type;
+          common::uint8_t flags_limit_hi;
+          common::uint8_t base_vhi;
 
         public:
           // Initialize Segment Table
-          SegmentDescriptor(myos::common::uint32_t base, myos::common::uint32_t limit, myos::common::uint8_t type);
+          SegmentDescriptor(common::uint32_t base, common::uint32_t limit, common::uint8_t type);
 
           // Get Segment Table detail
-          myos::common::uint32_t Base();
-          myos::common::uint32_t Limit();
+          common::uint32_t Base();
+          common::uint32_t Limit();
 
         // The packed type attribute specifies that a type must have the smallest possible alignment.
         // 叫compiler不要為我們做對齊的最佳化
@@ -68,8 +68,8 @@ namespace myos {
       ~GlobalDescriptorTable();
 
       // This code is supposed to be give us the `offset` of the code segment descriptor and one for data segment descriptor
-      myos::common::uint16_t CodeSegmentSelector();
-      myos::common::uint16_t DataSegmentSelector();
+      common::uint16_t CodeSegmentSelector();
+      common::uint16_t DataSegmentSelector();
   };
 
 }
