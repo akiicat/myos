@@ -65,7 +65,7 @@ namespace myos {
 
         // sector number is a 32 bit integer
         // so the highest bits of that just need to be ignored
-        void Read28(common::uint32_t sector);
+        void Read28(common::uint32_t sector, common::uint8_t* data, int count);
         void Write28(common::uint32_t sector, common::uint8_t* data, int count);
 
         // to flush the cache of half drive because the thing is when you write to a hard drive,

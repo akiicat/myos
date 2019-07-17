@@ -265,6 +265,12 @@ extern "C" void kernelMain(void *multiboot_structure, uint16_t magicnumber) {
   printf("ATA Primary Slave: ");
   ata0s.Identify();
 
+  // write something to the disk and flush. after that read it.
+  char* ataBuffer = "Hello World\n";
+  ata0s.Write28(0, (uint8_t*)ataBuffer, 13);
+  ata0s.Flush();
+  ata0s.Read28(0, (uint8_t*)ataBuffer, 13);
+
   // interrupt 15
   AdvancedTechnologyAttachment ata1m(0x170, true); // master, portBase: 0x1F0
   AdvancedTechnologyAttachment ata1s(0x170, false); // slave
