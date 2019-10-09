@@ -2,6 +2,7 @@
 #include <gdt.h>
 #include <memorymanagement.h>
 #include <hardwarecommunication/interrupts.h>
+#include <syscalls.h>
 #include <hardwarecommunication/pci.h>
 #include <drivers/driver.h>
 #include <drivers/keyboard.h>
@@ -138,8 +139,12 @@ class MouseToConsole : public MouseEventHandler {
     }
 };
 
-void taskA() { while(true) { printf("A"); } }
-void taskB() { while(true) { printf("B"); } }
+void sysprintf(char* str) {
+  asm("int $0x80" : : "a" (4), "b" (str));
+}
+
+void taskA() { while(true) { sysprintf("A"); } }
+void taskB() { while(true) { sysprintf("B"); } }
 
 // Write a custom contructor
 typedef void (*constructor)();
@@ -205,12 +210,13 @@ extern "C" void kernelMain(void *multiboot_structure, uint16_t magicnumber) {
   // the reason why I instantiated it up there is because
   // the interrupt handler will need to talk to the taskManager to do the scheduling
   TaskManager taskManager;
-  // Task task1(&gdt, taskA);
-  // Task task2(&gdt, taskB);
-  // taskManager.AddTask(&task1);
-  // taskManager.AddTask(&task2);
+  Task task1(&gdt, taskA);
+  Task task2(&gdt, taskB);
+  taskManager.AddTask(&task1);
+  taskManager.AddTask(&task2);
 
   InterruptManager interrupts(&gdt, &taskManager);
+  SyscallHandler syscalls(&interrupts, 0x80);
 
   printf("Initializing Hardware, Stage 1\n");
 

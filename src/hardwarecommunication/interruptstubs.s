@@ -68,6 +68,8 @@ HandleInterruptRequest 0x0E
 HandleInterruptRequest 0x0F
 HandleInterruptRequest 0x31
 
+HandleInterruptRequest 0x80 # syscall
+
 int_bottom:
 
   # we just push these values manually here
