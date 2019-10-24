@@ -16,7 +16,7 @@ namespace myos {
     };
 
     class DriverManager {
-      private:
+      public:  // must private, but temporary for public
         Driver* drivers[255];
         int numDrivers;
 

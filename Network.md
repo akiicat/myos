@@ -1,4 +1,5 @@
 // https://en.wikipedia.org/wiki/Ethernet
+// https://en.wikipedia.org/wiki/Ethernet_frame
 
 you can send and receive data now and that is basically like
 being able like knowing the alphabet. Just because you know
@@ -56,18 +57,19 @@ haven't implemented ARP when you aren't responding and it will
 just ignore you. So you need to implement ARP and the Internet
 Protocol (IP) here at offset 10.
 
-     12byte           2byte          10byte            1byte
-+--------------+-----------------+--------------+-----------------+-------------------+-------------------------------------+
-|      MAC     | Protocol number |      MAC     | Protocol number |        ...        | payload                             |
-+--------------+-----------------+--------------+-----------------+-------------------+-------------------------------------+
+     12byte             2byte             10byte             1byte
++--------------+---------------------+--------------+--------------------+-------------------+-------------------------------------+
+|  MAC Header  | MAC Protocol number |  IP Header   | IP Protocol number |        ...        | payload                             |
++--------------+---------------------+--------------+--------------------+-------------------+-------------------------------------+
                  0x0806 or 0x0800                   0x01 or 0x06 or 0x17
 
 Ethernet II frame
   + 0x0806 - Address Resolution Protocol (ARP)
-  + 0x0800 - Internet Protocol (IPv4)
+  + 0x0800 - Internet Protocol version 4 (IPv4)
       + 0x01 - Internet Control Message Protocol (ICMP)
       + 0x06 - Transmission Control Protocol (TCP)
       + 0x17 - User Datagram Protocol (UDP)
+  + 0x8600 - Internet Protocol version 6 (IPv6)
 
 You also have an 8-bit integer and depending on that value. If
 this protocol number is 1 you need to pass it to the internet

@@ -13,6 +13,21 @@ namespace myos {
 
   namespace drivers {
 
+    class amd_am79c973;
+
+    // this is where we will attache the Ether Frame handler
+    class RawDataHandler {
+      protected:
+        amd_am79c973* backend;
+
+      public:
+        RawDataHandler(amd_am79c973* backend);
+        ~RawDataHandler();
+
+        virtual bool OnRawDataReceived(common::uint8_t* buffer, common::uint32_t size);
+        void Send(common::uint8_t* buffer, common::uint32_t size);
+    };
+
     class amd_am79c973 : public Driver, public hardwarecommunication::InterruptHandler {
       private:
         struct InitializationBlock {
@@ -57,6 +72,8 @@ namespace myos {
         common::uint8_t recvBuffers[2*1024+15][8];
         common::uint8_t currentRecvBuffer;
 
+        RawDataHandler* handler;
+
       public:
         amd_am79c973(hardwarecommunication::PeripheralComponentInterconnectDeviceDescriptor* dev, hardwarecommunication::InterruptManager* interrupts);
         ~amd_am79c973();
@@ -67,6 +84,9 @@ namespace myos {
 
         void Send(common::uint8_t* buffer, int size);
         void Receive();
+
+        void SetHandler(RawDataHandler* handler);
+        common::uint64_t GetMACAddress();
     };
 
 

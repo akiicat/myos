@@ -13,6 +13,9 @@
 #include <gui/window.h>
 #include <multitasking.h>
 
+#include <drivers/amd_am79c973.h>
+#include <net/etherframe.h>
+
 // #define GRAPHICSMODE
 
 using namespace myos;
@@ -20,6 +23,7 @@ using namespace myos::common;
 using namespace myos::drivers;
 using namespace myos::hardwarecommunication;
 using namespace myos::gui;
+using namespace myos::net;
 
 
 // 將 string 寫到特定的記憶體位置 0xb8000
@@ -246,7 +250,9 @@ extern "C" void kernelMain(void *multiboot_structure, uint16_t magicnumber) {
   PeripheralComponentInterconnectController PCIController;
   PCIController.SelectDrivers(&drvManager, &interrupts);
 
+#ifdef GRAPHICSMODE
   VideoGraphicsArray vga;
+#endif
 
   printf("Initializing Hardware, Stage 2\n");
   drvManager.ActivateAll();
@@ -283,6 +289,11 @@ extern "C" void kernelMain(void *multiboot_structure, uint16_t magicnumber) {
 
   // third portBase: 0x1E8
   // fourth portBase: 0x168
+
+  amd_am79c973* eth0 = (amd_am79c973*)(drvManager.drivers[2]);
+  EtherFrameProvider etherframe(eth0);
+  etherframe.Send(0xFFFFFFFFFFFF, 0x0608, (uint8_t*)"FOO", 3); // 0x0806 ARP
+
 
   // activate the interrupts which really be the last thing we do
   //
