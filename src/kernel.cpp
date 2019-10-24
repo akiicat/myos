@@ -214,10 +214,12 @@ extern "C" void kernelMain(void *multiboot_structure, uint16_t magicnumber) {
   // the reason why I instantiated it up there is because
   // the interrupt handler will need to talk to the taskManager to do the scheduling
   TaskManager taskManager;
+#ifdef AB_TASK
   Task task1(&gdt, taskA);
   Task task2(&gdt, taskB);
   taskManager.AddTask(&task1);
   taskManager.AddTask(&task2);
+#endif
 
   InterruptManager interrupts(&gdt, &taskManager);
   SyscallHandler syscalls(&interrupts, 0x80);
@@ -268,6 +270,7 @@ extern "C" void kernelMain(void *multiboot_structure, uint16_t magicnumber) {
   desktop.AddChild(&win2);
 #endif
 
+#ifdef ATA
   // interrupt 14
   AdvancedTechnologyAttachment ata0m(0x1F0, true); // master, portBase: 0x1F0
   printf("ATA Primary Master: ");
@@ -289,6 +292,7 @@ extern "C" void kernelMain(void *multiboot_structure, uint16_t magicnumber) {
 
   // third portBase: 0x1E8
   // fourth portBase: 0x168
+#endif
 
   amd_am79c973* eth0 = (amd_am79c973*)(drvManager.drivers[2]);
   EtherFrameProvider etherframe(eth0);
