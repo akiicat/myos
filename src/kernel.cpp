@@ -25,16 +25,16 @@ using namespace myos::hardwarecommunication;
 using namespace myos::gui;
 using namespace myos::net;
 
-
-// 將 string 寫到特定的記憶體位置 0xb8000
-// 顯示卡則會去此位置抓取值，將文字 render 到螢幕上
+// write the string into the 0xb8000 memory address so that
+// the graphic card will print the string on the screen 
+// A character has 16 bits
 //
-// 以 16 個 bit 為單位組成一個文字：
-//   - high byte:
-//     - 4bit: front ground
-//     - 4bit: back ground
-//   - low byte:
-//     - 8bit: char
+//        4 bits           4 bits                   8 bits
+// +-------------------------------------------------------------------+
+// |  front ground  |   back ground  |             character           |
+// +-------------------------------------------------------------------+
+// |            high byte            |             low byte            |
+// +-------------------------------------------------------------------+
 //
 // screen = 25 x 80 char
 void printf(char *str) {
