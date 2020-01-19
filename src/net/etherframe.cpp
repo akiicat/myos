@@ -76,24 +76,24 @@ bool EtherFrameProvider::OnRawDataReceived(common::uint8_t* buffer, common::uint
   return sendBack;
 }
 
-void EtherFrameProvider::Send(common::uint64_t dstMAC_BE, common::uint16_t etherType_BE, common::uint8_t* buffer, common::uint32_t size) {
+void EtherFrameProvider::Send(common::uint64_t dstMAC_BE, common::uint16_t etherType_BE, common::uint8_t* src_buffer, common::uint32_t size) {
 
   // we get the memory from the header plus the size of the buffer that we want to send
-  uint8_t* buffer2 = (uint8_t*)MemoryManager::activeMemoryManager->malloc(sizeof(EtherFrameHeader) + size);
-  EtherFrameHeader* frame = (EtherFrameHeader*)buffer;
+  uint8_t* dst_buffer = (uint8_t*)MemoryManager::activeMemoryManager->malloc(sizeof(EtherFrameHeader) + size);
+  EtherFrameHeader* frame = (EtherFrameHeader*)src_buffer;
 
   // impose a header on it again
   frame->dstMAC_BE = dstMAC_BE;
   frame->srcMAC_BE = backend->GetMACAddress();
   frame->etherType_BE = etherType_BE;
 
-  // we just copy the buffer from this `buffer` to this `buffer2`
-  uint8_t* src = buffer;
-  uint8_t* dst = buffer2 + sizeof(EtherFrameHeader);
+  // we just copy the buffer from this `src_buffer` to this `dst_buffer`
+  uint8_t* src = src_buffer;
+  uint8_t* dst = dst_buffer + sizeof(EtherFrameHeader);
   for (uint32_t i = 0; i < size; i++) {
     dst[i] = src[i];
   }
 
-  // pass `buffer2` the backend
-  backend->Send(buffer2, size + sizeof(EtherFrameHeader));
+  // pass `dst_buffer` the backend
+  backend->Send(dst_buffer, size + sizeof(EtherFrameHeader));
 }
