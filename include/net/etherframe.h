@@ -82,6 +82,11 @@ namespace myos {
 
     class EtherFrameProvider;
 
+    // A Single Ether Frame, for example:
+    //   etherType_BE  Name
+    //   0x0806        ARP  
+    //   0x0800        IPv4 
+    //   0x8600        IPv6 
     class EtherFrameHandler {
       protected:
         EtherFrameProvider* backend;
@@ -96,6 +101,7 @@ namespace myos {
 
     };
 
+    // A group of EtherFrameHandler
     class EtherFrameProvider : public drivers::RawDataHandler {
       friend class EtherFrameHandler;
 
