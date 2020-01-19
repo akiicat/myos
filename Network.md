@@ -1,3 +1,7 @@
+# Network
+
+## Ethernet Frame
+
 // https://en.wikipedia.org/wiki/Ethernet
 // https://en.wikipedia.org/wiki/Ethernet_frame
 
@@ -142,4 +146,109 @@ we think it's the same network, and then we send our data directly
 there through the switch. Otherwise, we sent it to the gateway
 instead. Gateway take this you take care of it. It's a gateways
 problem to send this out through the internet or something.
+
+## Address Resolution Protocl (ARP)
+
+https://en.wikipedia.org/wiki/Address_Resolution_Protocol
+
+An ARP data block looks like this.
+
+                                   2 bytes
+   +---------------------------------------------------------------------+
+ 0 |                         Hardware Type (HTYPE)                       |
+   +---------------------------------------------------------------------+
+ 2 |                         Protocol Type (PTYPE)                       |
+   +----------------------------------+----------------------------------+
+ 4 |  Hardware address length (HLEN)  |  Protocol address length (PLEN)  |
+   +----------------------------------+----------------------------------+
+ 6 |                       Command / Operation (OPER)                    |
+   +---------------------------------------------------------------------+
+ 8 |                                                                     |
+   |                                                                     |
+10 |                    Sender hardware address (SHA)                    |
+   |                                                                     |
+12 |                                                                     |
+   +---------------------------------------------------------------------+
+14 |                                                                     |
+   |                    Sender protocol address (SPA)                    |
+16 |                                                                     |
+   +---------------------------------------------------------------------+
+18 |                                                                     |
+   |                                                                     |
+20 |                    Target hardware address (THA)                    |
+   |                                                                     |
+22 |                                                                     |
+   +---------------------------------------------------------------------+
+24 |                                                                     |
+   |                    Target protocol address (TPA)                    |
+26 |                                                                     |
+   +---------------------------------------------------------------------+
+
+
+hardware type = 0x0100
+protocol type = 0x0008
+hardware address length = 6
+protocol address length = 4
+command
+
+
+You get two bytes which tell you the **hardware type**. It tells you
+this is going through Ethernet or is going to wireless LAN or something.
+In our case this will always be one for Ethernet. This is two bytes
+value and it's big-endian encoded so this will actually be 0x0100 the
+big-endian enoding of 2 by 1.
+
+Then we have 2 bytes for the **protocol type**. I mean we already have
+an information about protocol is **ether type**, which will be 0x0806,
+but the protocol that we have **ether type** is not he same as
+**protocol type**. **Protocol type** tells us we are talking about IPv4
+so this will be 0x0800. The ARP message talks about IPv4 which has code
+0x0800 and again this is big-endian encoded so actually you would have
+0x0008.
+
+Then you have 2 fields of size 1 byte, **hardware address length** and 
+**protocol address length**. **Hardware addredd length**, which tell
+you the size of hardware address so this would be 6 because MAC
+addresses have size 6, and here **protocol address length** we have 4
+because IPv4 address have size of 4 bytes.
+
+Then we have 2 more bytes with a **command**, which tells us what does
+the sender of this message want from us. It asks us what is your IP
+address or is it a response to our quenstion. Maybe we have asked him
+what is your IP address and this is the response. These are actually
+the two commands that we will implement.
+
+After that we have 6, 4, 6, 4 bytes which contain **MAC address of sender**,
+**IP address of sender**, **MAC address of receiver**, **IP address of receiver**.
+If the command tell me your IP address, then IP address of receiver
+won't be a legal value or maybe if we get it from a abroadcast then 
+the MAC address of receiver will be a broadcast address.
+
+When we send something back, we will copy the MAC address of sender
+block to the MAC address of receiver block because we are sending
+this back to the sender of the message. But actually not all ARP
+messages have this exact length. The lengths of the stuff after
+the **command** can differ based on these two values, hardware
+address length and protocol address length. But we will really hard
+code this to be 6 and 4 bytes.
+
+The ARP class needs to know the IP address of the machine because
+how do you know what you answers a question for your IP address if
+you don't know your IP address, so it needs to get the IP address
+somehow. But ARP is in the class for the network card, the network
+card is init block and had 4 bytes for an IP address. 
+
+amd_am79c973
+  + Ethernet II frame
+    + 0x0806 - Address Resolution Protocol (ARP)
+    + 0x0800 - Internet Protocol version 4 (IPv4)
+        + 0x01 - Internet Control Message Protocol (ICMP)
+        + 0x06 - Transmission Control Protocol (TCP)
+        + 0x17 - User Datagram Protocol (UDP)
+    + 0x8600 - Internet Protocol version 6 (IPv6)
+
+We will tell amd_am79c973 this class this is your IP address, and
+ARP class is supposed to ask Ethernet II class, and Ethernet II
+class is supposed to ask amd_am79c973 class.
+
 
