@@ -173,6 +173,12 @@ void amd_am79c973::Send(uint8_t* buffer, int size) {
     *dst = *src;
   }
 
+  printf("Sending: ");
+  for (int i = 0; i < size; i++) {
+    printfHex(buffer[i]);
+    printf(" ");
+  }
+
   // mark this buffer as in use
   // it's not allowed to write anything else in there until it's it becomes available again
   // with this we clear any error messages that have been there before
@@ -238,6 +244,12 @@ void amd_am79c973::Receive() {
       //   printfHex(buffer[i]);
       //   printf(" ");
       // }
+      // ARP: just print the data out before we handle it
+      size = 64;
+      for (int i = 0; i < size; i++) {
+        printfHex(buffer[i]);
+        printf(" ");
+      }
 
       // in the end of the loop, we have finished handling this
       // so you can have this back
@@ -256,3 +268,10 @@ uint64_t amd_am79c973::GetMACAddress() {
   return initBlock.physicalAddress;
 }
 
+void amd_am79c973::SetIPAddress(uint32_t ip) {
+  initBlock.logicalAddress = ip;
+}
+
+uint32_t amd_am79c973::GetIPAddress() {
+  return initBlock.logicalAddress;
+}

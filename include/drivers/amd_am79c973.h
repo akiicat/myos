@@ -38,7 +38,7 @@ namespace myos {
           unsigned numRecvBuffers : 4;
           common::uint64_t physicalAddress : 48;
           common::uint16_t reserved3;
-          common::uint64_t logicalAddress;
+          common::uint32_t logicalAddress;
           common::uint32_t recvBufferDescrAddress;
           common::uint32_t sendBufferDescrAddress;
         } __attribute__((packed));
@@ -87,8 +87,12 @@ namespace myos {
 
         void SetHandler(RawDataHandler* handler);
         common::uint64_t GetMACAddress();
-    };
 
+        // You could set get this from DHCP.
+        // Here, we set this IP address manually.
+        void SetIPAddress(common::uint32_t);
+        common::uint32_t GetIPAddress();
+    };
 
   }
 }

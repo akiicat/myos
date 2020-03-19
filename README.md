@@ -63,3 +63,16 @@ run: mykernel.iso
 ```shell
 make run
 ```
+
+## TroubleShooting
+
+Error message:
+
+> virtualbox: error -1908 in suplibosinit
+
+```shell
+sudo apt install --reinstall virtualbox-dkms
+```
+
+- [Ubuntu Ask](https://askubuntu.com/questions/912011/fatal-module-vboxdrv-not-found-in-directory-lib-modules-4-10-0-20-generic)
+

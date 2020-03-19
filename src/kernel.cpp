@@ -15,6 +15,7 @@
 
 #include <drivers/amd_am79c973.h>
 #include <net/etherframe.h>
+#include <net/arp.h>
 
 // #define GRAPHICSMODE
 
@@ -294,10 +295,30 @@ extern "C" void kernelMain(void *multiboot_structure, uint16_t magicnumber) {
   // fourth portBase: 0x168
 #endif
 
-  amd_am79c973* eth0 = (amd_am79c973*)(drvManager.drivers[2]);
-  EtherFrameProvider etherframe(eth0);
-  etherframe.Send(0xFFFFFFFFFFFF, 0x0608, (uint8_t*)"FOO", 3); // 0x0806 ARP
+  // This was an IP address that virualbox will accept 10.0.2.15
+  uint8_t ip1 = 10, ip2 = 0, ip3 = 2, ip4 = 15; // ip
+  uint32_t ip_be = ((uint32_t)ip4 <<24)
+                 | ((uint32_t)ip3 <<16)
+                 | ((uint32_t)ip2 <<8)
+                 | ((uint32_t)ip1);
+  uint8_t gip1 = 10, gip2 = 0, gip3 = 2, gip4 = 2; // gateway
+  uint32_t gip_be = ((uint32_t)gip4 <<24)
+                  | ((uint32_t)gip3 <<16)
+                  | ((uint32_t)gip2 <<8)
+                  | ((uint32_t)gip1);
 
+  amd_am79c973* eth0 = (amd_am79c973*)(drvManager.drivers[2]);
+
+  // Told the network card that this is our IP, so the other layers
+  // can request it.
+  eth0->SetIPAddress(ip_be);
+
+  // Here, we attach Etherframe to the driver.
+  EtherFrameProvider etherframe(eth0);
+
+  // The AddressResolutionProtocol is attached to the etherframe.
+  AddressResolutionProtocol arp(&etherframe);
+  // etherframe.Send(0xFFFFFFFFFFFF, 0x0608, (uint8_t*)"FOO", 3); // 0x0806 ARP
 
   // activate the interrupts which really be the last thing we do
   //
@@ -305,6 +326,11 @@ extern "C" void kernelMain(void *multiboot_structure, uint16_t magicnumber) {
   // it never goes back to the kernel stack so everything after this interrupts activate then might not be executed anymore
   // so that's why this really should be the last thing here
   interrupts.Activate();
+
+  // ARP: We can get an answer only after the interrputs are activated.
+  // Because when we get an answer, this is done through an interrupt handler.
+  // printf("\n");
+  arp.Resolve(gip_be); // request gateway ip
 
   // when we start the multitasking,
   // this loop will never be executed anymore

@@ -97,3 +97,11 @@ void EtherFrameProvider::Send(common::uint64_t dstMAC_BE, common::uint16_t ether
   // pass `dst_buffer` the backend
   backend->Send(dst_buffer, size + sizeof(EtherFrameHeader));
 }
+
+uint32_t EtherFrameProvider::GetIPAddress() {
+  return backend->GetIPAddress();
+}
+
+uint64_t EtherFrameProvider::GetMACAddress() {
+  return backend->GetMACAddress();
+}

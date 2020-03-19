@@ -114,6 +114,10 @@ namespace myos {
 
         bool OnRawDataReceived(common::uint8_t* buffer, common::uint32_t size);
         void Send(common::uint64_t dstMAC_BE, common::uint16_t etherType_BE, common::uint8_t* buffer, common::uint32_t size);
+
+        // be supoosed to give us an IP address and MAC address from the driver
+        common::uint64_t GetMACAddress();
+        common::uint32_t GetIPAddress();
     };
   }
 }

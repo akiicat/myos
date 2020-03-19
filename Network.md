@@ -159,28 +159,28 @@ An ARP data block looks like this.
    +---------------------------------------------------------------------+
  2 |                         Protocol Type (PTYPE)                       |
    +----------------------------------+----------------------------------+
- 4 |  Hardware address length (HLEN)  |  Protocol address length (PLEN)  |
+ 4 |  Hardware (MAC) address length   |  Protocol (IP) address length    |
    +----------------------------------+----------------------------------+
  6 |                       Command / Operation (OPER)                    |
    +---------------------------------------------------------------------+
  8 |                                                                     |
    |                                                                     |
-10 |                    Sender hardware address (SHA)                    |
+10 |                    Sender hardware (MAC) address (SHA)              |
    |                                                                     |
 12 |                                                                     |
    +---------------------------------------------------------------------+
 14 |                                                                     |
-   |                    Sender protocol address (SPA)                    |
+   |                    Sender protocol (IP) address (SPA)               |
 16 |                                                                     |
    +---------------------------------------------------------------------+
 18 |                                                                     |
    |                                                                     |
-20 |                    Target hardware address (THA)                    |
+20 |                    Target hardware (MAC) address (THA)              |
    |                                                                     |
 22 |                                                                     |
    +---------------------------------------------------------------------+
 24 |                                                                     |
-   |                    Target protocol address (TPA)                    |
+   |                    Target protocol (IP) address (TPA)               |
 26 |                                                                     |
    +---------------------------------------------------------------------+
 
@@ -251,4 +251,23 @@ We will tell amd_am79c973 this class this is your IP address, and
 ARP class is supposed to ask Ethernet II class, and Ethernet II
 class is supposed to ask amd_am79c973 class.
 
+
+
+By the way, if you ask yourself why do we have the MAC address
+here again (both Ethernet and ARP have MAC addresses).
+So you might think why we have MAC addresses here again, you
+could just look at these instead. While you cannot say I will
+just leave MAC addresses out in ARP and just use MAC addresses
+in EtherFrame instead, because there can be multiple machines
+between the sender and the destination.
+
+  Machine A  --->  Machine B  --->  Machine C
+
+When Machine A wants to talk to Machine C, Machine A MAC and
+IP addresses will be ARP packet srcMAC and srcIP, and Machine
+C MAC and IP addressess will be ARP packet dstMAC and srcIP.
+But Machine A will have to send the whole to Machine B first,
+when Machine A communicates with Machine B, the Ether source
+MAC address will be Machine A, and the Ether destination MAC
+address will be Machine B not Machine C.
 
