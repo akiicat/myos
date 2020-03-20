@@ -77,7 +77,6 @@ bool EtherFrameProvider::OnRawDataReceived(uint8_t* buffer, uint32_t size) {
 }
 
 void EtherFrameProvider::Send(uint64_t dstMAC_BE, uint16_t etherType_BE, uint8_t* src_buffer, uint32_t size) {
-
   // we get the memory from the header plus the size of the buffer that we want to send
   uint8_t* dst_buffer = (uint8_t*)MemoryManager::activeMemoryManager->malloc(sizeof(EtherFrameHeader) + size);
   EtherFrameHeader* frame = (EtherFrameHeader*)dst_buffer;
@@ -105,3 +104,4 @@ uint32_t EtherFrameProvider::GetIPAddress() {
 uint64_t EtherFrameProvider::GetMACAddress() {
   return backend->GetMACAddress();
 }
+

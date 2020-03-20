@@ -297,14 +297,14 @@ extern "C" void kernelMain(void *multiboot_structure, uint16_t magicnumber) {
 
   // This was an IP address that virualbox will accept 10.0.2.15
   uint8_t ip1 = 10, ip2 = 0, ip3 = 2, ip4 = 15; // ip
-  uint32_t ip_be = ((uint32_t)ip4 <<24)
-                 | ((uint32_t)ip3 <<16)
-                 | ((uint32_t)ip2 <<8)
+  uint32_t ip_be = ((uint32_t)ip4 << 24)
+                 | ((uint32_t)ip3 << 16)
+                 | ((uint32_t)ip2 << 8)
                  | ((uint32_t)ip1);
   uint8_t gip1 = 10, gip2 = 0, gip3 = 2, gip4 = 2; // gateway
-  uint32_t gip_be = ((uint32_t)gip4 <<24)
-                  | ((uint32_t)gip3 <<16)
-                  | ((uint32_t)gip2 <<8)
+  uint32_t gip_be = ((uint32_t)gip4 << 24)
+                  | ((uint32_t)gip3 << 16)
+                  | ((uint32_t)gip2 << 8)
                   | ((uint32_t)gip1);
 
   amd_am79c973* eth0 = (amd_am79c973*)(drvManager.drivers[2]);

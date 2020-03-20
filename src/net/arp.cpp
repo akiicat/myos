@@ -5,6 +5,9 @@ using namespace myos::common;
 using namespace myos::net;
 using namespace myos::drivers;
 
+void printf(char*);
+void printfHex(uint8_t);
+
 AddressResolutionProtocol::AddressResolutionProtocol(EtherFrameProvider* backend) 
   : EtherFrameHandler(backend, 0x806) // 0x806 for ARP
 {
@@ -16,6 +19,7 @@ AddressResolutionProtocol::~AddressResolutionProtocol() {
 }
 
 bool AddressResolutionProtocol::OnEtherFrameReceived(uint8_t* etherframePayload, uint32_t size) {
+  printf("ARP RECV:\n");
   // When we reciev such a message, we cast it to the message type first.
   // But we should only do this if the size is large enough.
   if (size < sizeof(AddressResolutionProtocolMessage)) {

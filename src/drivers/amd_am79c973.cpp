@@ -5,8 +5,6 @@ using namespace myos::common;
 using namespace myos::drivers;
 using namespace myos::hardwarecommunication;
 
-amd_am79c973* backend;
-
 RawDataHandler::RawDataHandler(amd_am79c973* backend) {
   this->backend = backend;
   backend->SetHandler(this);
@@ -87,7 +85,7 @@ amd_am79c973::amd_am79c973(PeripheralComponentInterconnectDeviceDescriptor* dev,
     sendBufferDescr[i].avail = 0;
 
     recvBufferDescr[i].address = (((uint32_t)&recvBuffers[i]) + 15) & ~(uint32_t)0xF;
-    recvBufferDescr[i].flags = 0x7FF | 0x80000000;
+    recvBufferDescr[i].flags = 0xF7FF | 0x80000000;
     recvBufferDescr[i].flags2 = 0;
     recvBufferDescr[i].avail = 0;
   }
@@ -256,7 +254,7 @@ void amd_am79c973::Receive() {
       recvBufferDescr[currentRecvBuffer].flags2 = 0;
       recvBufferDescr[currentRecvBuffer].flags = 0x8000F7FF;
     }
-  };
+  }
 }
 
 void amd_am79c973::SetHandler(RawDataHandler* handler) {
