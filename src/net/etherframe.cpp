@@ -5,7 +5,7 @@ using namespace myos::common;
 using namespace myos::net;
 using namespace myos::drivers;
 
-EtherFrameHandler::EtherFrameHandler(EtherFrameProvider* backend, common::uint16_t etherType) {
+EtherFrameHandler::EtherFrameHandler(EtherFrameProvider* backend, uint16_t etherType) {
   // convert ethertype to big endian
   this->etherType_BE = ((etherType & 0x00FF) << 8)
                      | ((etherType & 0xFF00) >> 8);
@@ -17,12 +17,12 @@ EtherFrameHandler::~EtherFrameHandler() {
   backend->handlers[etherType_BE] = 0;
 }
 
-bool EtherFrameHandler::OnEtherFrameReceived(common::uint8_t* etherframePayload, common::uint32_t size) {
+bool EtherFrameHandler::OnEtherFrameReceived(uint8_t* etherframePayload, uint32_t size) {
   // just return false, because we are not sending anything like that
   return false;
 }
 
-void EtherFrameHandler::Send(common::uint64_t dstMAC_BE, common::uint8_t* data, common::uint32_t size) {
+void EtherFrameHandler::Send(uint64_t dstMAC_BE, uint8_t* data, uint32_t size) {
   backend->Send(dstMAC_BE, etherType_BE, data, size);
 }
 
@@ -38,7 +38,7 @@ EtherFrameProvider::~EtherFrameProvider() {
 
 }
 
-bool EtherFrameProvider::OnRawDataReceived(common::uint8_t* buffer, common::uint32_t size) {
+bool EtherFrameProvider::OnRawDataReceived(uint8_t* buffer, uint32_t size) {
   // we would put EtherFrameHeader structure over it
   EtherFrameHeader* frame = (EtherFrameHeader*)buffer;
   bool sendBack = false;
@@ -76,11 +76,11 @@ bool EtherFrameProvider::OnRawDataReceived(common::uint8_t* buffer, common::uint
   return sendBack;
 }
 
-void EtherFrameProvider::Send(common::uint64_t dstMAC_BE, common::uint16_t etherType_BE, common::uint8_t* src_buffer, common::uint32_t size) {
+void EtherFrameProvider::Send(uint64_t dstMAC_BE, uint16_t etherType_BE, uint8_t* src_buffer, uint32_t size) {
 
   // we get the memory from the header plus the size of the buffer that we want to send
   uint8_t* dst_buffer = (uint8_t*)MemoryManager::activeMemoryManager->malloc(sizeof(EtherFrameHeader) + size);
-  EtherFrameHeader* frame = (EtherFrameHeader*)src_buffer;
+  EtherFrameHeader* frame = (EtherFrameHeader*)dst_buffer;
 
   // impose a header on it again
   frame->dstMAC_BE = dstMAC_BE;
