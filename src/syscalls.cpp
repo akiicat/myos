@@ -4,8 +4,8 @@ using namespace myos;
 using namespace myos::common;
 using namespace myos::hardwarecommunication;
 
-SyscallHandler::SyscallHandler(InterruptManager* interruptManager, myos::common::uint8_t interruptNumber)
-  : InterruptHandler(interruptManager, interruptNumber + interruptManager->HardwareInterruptOffset()) {
+SyscallHandler::SyscallHandler(InterruptManager* interruptManager, uint8_t InterruptNumber)
+  :    InterruptHandler(interruptManager, InterruptNumber  + interruptManager->HardwareInterruptOffset()) {
 
 }
 
@@ -13,7 +13,7 @@ SyscallHandler::~SyscallHandler() {
 
 }
 
-void printf(char* str);
+void printf(char*);
 
 uint32_t SyscallHandler::HandleInterrupt(uint32_t esp) {
   CPUState* cpu = (CPUState*)esp;

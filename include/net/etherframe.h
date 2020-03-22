@@ -76,7 +76,7 @@ namespace myos {
       common::uint64_t dstMAC_BE : 48; // mac addresses hava only six bytes
       common::uint64_t srcMAC_BE : 48;
       common::uint16_t etherType_BE;
-    } __attribute__((packed));
+    } __attribute__ ((packed));
 
     typedef common::uint32_t EtherFrameFooter;
 
@@ -96,7 +96,7 @@ namespace myos {
         EtherFrameHandler(EtherFrameProvider* backend, common::uint16_t etherType);
         ~EtherFrameHandler();
 
-        virtual bool OnEtherFrameReceived(common::uint8_t* etherframePayload, common::uint32_t size);
+        bool OnEtherFrameReceived(common::uint8_t* etherframePayload, common::uint32_t size);
         void Send(common::uint64_t dstMAC_BE, common::uint8_t* etherframePayload, common::uint32_t size);
 
     };

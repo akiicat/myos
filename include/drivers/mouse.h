@@ -29,7 +29,6 @@ namespace myos {
       myos::common::uint8_t buttons;
 
       MouseEventHandler* handler;
-      myos::common::int8_t x, y;
     public:
       MouseDriver(myos::hardwarecommunication::InterruptManager* manager, MouseEventHandler* handler);
       ~MouseDriver();

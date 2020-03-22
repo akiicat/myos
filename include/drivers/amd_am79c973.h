@@ -24,7 +24,7 @@ namespace myos {
         RawDataHandler(amd_am79c973* backend);
         ~RawDataHandler();
 
-        virtual bool OnRawDataReceived(common::uint8_t* buffer, common::uint32_t size);
+        bool OnRawDataReceived(common::uint8_t* buffer, common::uint32_t size);
         void Send(common::uint8_t* buffer, common::uint32_t size);
     };
 
@@ -38,7 +38,7 @@ namespace myos {
           unsigned numRecvBuffers : 4;
           common::uint64_t physicalAddress : 48;
           common::uint16_t reserved3;
-          common::uint32_t logicalAddress;
+          common::uint64_t logicalAddress;
           common::uint32_t recvBufferDescrAddress;
           common::uint32_t sendBufferDescrAddress;
         } __attribute__((packed));
@@ -63,26 +63,27 @@ namespace myos {
         InitializationBlock initBlock;
 
         BufferDescriptor* sendBufferDescr;
-        common::uint8_t sendBufferDescMemory[2048+15];
+        common::uint8_t sendBufferDescrMemory[2048+15];
         common::uint8_t sendBuffers[2*1024+15][8];
         common::uint8_t currentSendBuffer;
 
         BufferDescriptor* recvBufferDescr;
-        common::uint8_t recvBufferDescMemory[2048+15];
+        common::uint8_t recvBufferDescrMemory[2048+15];
         common::uint8_t recvBuffers[2*1024+15][8];
         common::uint8_t currentRecvBuffer;
 
         RawDataHandler* handler;
 
       public:
-        amd_am79c973(hardwarecommunication::PeripheralComponentInterconnectDeviceDescriptor* dev, hardwarecommunication::InterruptManager* interrupts);
+        amd_am79c973(hardwarecommunication::PeripheralComponentInterconnectDeviceDescriptor *dev,
+            hardwarecommunication::InterruptManager* interrupts);
         ~amd_am79c973();
 
         void Activate();
         int Reset();
         common::uint32_t HandleInterrupt(common::uint32_t esp);
 
-        void Send(common::uint8_t* buffer, int size);
+        void Send(common::uint8_t* buffer, int count);
         void Receive();
 
         void SetHandler(RawDataHandler* handler);

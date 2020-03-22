@@ -22,7 +22,8 @@ namespace myos {
         common::uint32_t MouseY;
 
       public:
-        Desktop(common::int32_t w, common::int32_t h, common::uint8_t r, common::uint8_t g, common::uint8_t b);
+        Desktop(common::int32_t w, common::int32_t h,
+            common::uint8_t r, common::uint8_t g, common::uint8_t b);
         ~Desktop();
 
         // The Desktop will be responsible for drawing the mouse

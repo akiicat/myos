@@ -32,7 +32,7 @@ Task::Task(GlobalDescriptorTable* gdt, void entrypoint()) {
   // cpustate->error = 0;
 
   // instruction pointer is set to the entry point;
-  cpustate->eip = (uint32_t) entrypoint;
+  cpustate->eip = (uint32_t)entrypoint;
 
   // in the tutorial, they just set this to 0x08,
   // but got a lot of general projections faults which is the equivalent of a blue screen
@@ -57,7 +57,6 @@ Task::Task(GlobalDescriptorTable* gdt, void entrypoint()) {
 }
 
 Task::~Task() {
-  
 }
 
 TaskManager::TaskManager() {
@@ -69,7 +68,6 @@ TaskManager::TaskManager() {
 }
 
 TaskManager::~TaskManager() {
-  
 }
 
 bool TaskManager::AddTask(Task* task) {

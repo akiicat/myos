@@ -8,8 +8,8 @@ namespace myos {
 
   // double link list
   struct MemoryChunk {
-    MemoryChunk* next;
-    MemoryChunk* prev;
+    MemoryChunk *next;
+    MemoryChunk *prev;
     bool allocated;
     common::size_t size;
   };
@@ -22,7 +22,7 @@ namespace myos {
       // we want to call the allocation later from static functions
       static MemoryManager *activeMemoryManager;
 
-      MemoryManager(common::size_t start, common::size_t size);
+      MemoryManager(common::size_t first, common::size_t size);
       ~MemoryManager();
 
       void* malloc(common::size_t size);

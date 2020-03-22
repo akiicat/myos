@@ -1,5 +1,5 @@
-#ifndef __MYOS__HARDWARECOMMUNICATION__INTERRUPTS_H
-#define __MYOS__HARDWARECOMMUNICATION__INTERRUPTS_H
+#ifndef __MYOS__HARDWARECOMMUNICATION__INTERRUPTMANAGER_H
+#define __MYOS__HARDWARECOMMUNICATION__INTERRUPTMANAGER_H
 
 #include <gdt.h>
 #include <multitasking.h>
@@ -14,12 +14,12 @@ namespace myos {
 
     class InterruptHandler {
       protected:
-        myos::common::uint8_t interruptNumber;
+        myos::common::uint8_t InterruptNumber;
         InterruptManager* interruptManager;
+        InterruptHandler(InterruptManager* interruptManager, myos::common::uint8_t InterruptNumber);
+        ~InterruptHandler();
 
       public:
-        InterruptHandler(InterruptManager* interruptManager, myos::common::uint8_t interruptNumber);
-        ~InterruptHandler();
 
         // must virtual mode:
         //   when inherit this class, the parent's function will be overwrited by the child's one.
@@ -164,34 +164,14 @@ namespace myos {
 
         // set the entries in the interrupt descriptor table
         static void SetInterruptDescriptorTableEntry(
-            myos::common::uint8_t interruptNumber,
+            myos::common::uint8_t interrupt,
             myos::common::uint16_t codeSegmentSelectorOffset,
             void (*handler)(),
             myos::common::uint8_t DescriptorPrivilegeLevel,
             myos::common::uint8_t DescriptorType
         );
 
-        Port8BitSlow picMasterCommand;
-        Port8BitSlow picMasterData;
-        Port8BitSlow picSlaveCommand;
-        Port8BitSlow picSlaveData;
-
-      public:
-        // input GDT table
-        InterruptManager(myos::GlobalDescriptorTable* gdt, myos::TaskManager* taskManager);
-        ~InterruptManager();
-
-        myos::common::uint16_t HardwareInterruptOffset();
-
-        void Activate();
-        void Deactivate();
-
-        static myos::common::uint32_t HandleInterrupt(myos::common::uint8_t interruptNumber, myos::common::uint32_t esp);
-
-        // call the non-static function to handle interrupt ActiveInterruptManager
-        myos::common::uint32_t DoHandleInterrupt(myos::common::uint8_t interruptNumber, myos::common::uint32_t esp);
-
-        static void IgnoreInterruptRequest();
+        static void InterruptIgnore();
 
         static void HandleInterruptRequest0x00(); // timer interrupt
         static void HandleInterruptRequest0x01(); // keyboard interrupt
@@ -234,7 +214,24 @@ namespace myos {
         static void HandleException0x12();
         static void HandleException0x13();
 
+        static common::uint32_t HandleInterrupt(common::uint8_t interrupt, common::uint32_t esp);
+        // call the non-static function to handle interrupt ActiveInterruptManager
+        common::uint32_t DoHandleInterrupt(common::uint8_t interrupt, common::uint32_t esp);
 
+        Port8BitSlow programmableInterruptControllerMasterCommandPort;
+        Port8BitSlow programmableInterruptControllerMasterDataPort;
+        Port8BitSlow programmableInterruptControllerSlaveCommandPort;
+        Port8BitSlow programmableInterruptControllerSlaveDataPort;
+
+      public:
+        // input GDT table
+        InterruptManager(myos::common::uint16_t hardwareInterruptOffset, myos::GlobalDescriptorTable* globalDescriptorTable, myos::TaskManager* taskManager);
+        ~InterruptManager();
+
+        myos::common::uint16_t HardwareInterruptOffset();
+
+        void Activate();
+        void Deactivate();
     };
 
   }

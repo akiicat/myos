@@ -8,16 +8,16 @@
 #   eax = multiboot struct
 #   ebx = magic number
 .set MAGIC, 0x1badb002
-.set FLAGS, (1<<0 | 1<< 1)
+.set FLAGS, (1<<0 | 1<<1)
 .set CHECKSUM, -(MAGIC + FLAGS)
 
 .section .multiboot
-	.long MAGIC
-	.long FLAGS
-	.long CHECKSUM
+  .long MAGIC
+  .long FLAGS
+  .long CHECKSUM
 
 .section .text
-.extern kernelMain 
+.extern kernelMain
 .extern callConstructors
 .global loader # 進入點
 
@@ -28,28 +28,28 @@ loader:
   # 這個執行檔並不會設定 stack pointer 的位置
   # 造成 C++ 會無法在開機執行
   # 這行在設定 esp stack pointer 的起始位置
-	mov $kernel_stack, %esp   
+  mov $kernel_stack, %esp
 
   call callConstructors
 
   # eax: extended accumulator register
   # 裡面放的是 multiboot struct
   # 把 eax 放到 esp 的 stack 裡面，然後 esp + 4
-	push %eax 
+  push %eax
 
   # ebx: extended base register
   # 裡面放的是 magic number
   # 把 ebx 放到 esp 的 stack 裡面，然後 esp + 4
-	push %ebx
-	call kernelMain # 呼叫 C++ 的 function
+  push %ebx
+  call kernelMain # 呼叫 C++ 的 function
 
 # 無窮迴圈
 # 如果 kernelMain 的 function 執行結束，則會進入到這個地方
 # 如果沒有加的話，執行完 kernelMain 之後會重新開機
 _stop:
-	cli
-	hlt
-	jmp _stop
+  cli
+  hlt
+  jmp _stop
 
 # bss: block started by symbol 未初始化的全域變數
 # 宣告一個空間當作 stack

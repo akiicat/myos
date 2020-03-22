@@ -40,12 +40,14 @@ void MouseDriver::Activate() {
   offset = 0;
   buttons = 0;
 
+  if (handler != 0) {
+    handler->OnActivate();
+  }
+
   commandport.Write(0xA8); // activate interrupts
-  commandport.Write(0x20); // get current state
-
+  commandport.Write(0x20); // get current state   // command 0x60 = read controller command byte
   uint8_t status = dataport.Read() | 2; // set second bit to true and write back to status
-
-  commandport.Write(0x60); // set state
+  commandport.Write(0x60); // set state           // command 0x60 = set controller command byte
   dataport.Write(status);
 
   commandport.Write(0xD4);
@@ -59,11 +61,10 @@ uint32_t MouseDriver::HandleInterrupt(uint32_t esp) {
 
   if (!(status & 0x20)) return esp;
 
-  static int8_t x = 40, y = 12;
+  buffer[offset] = dataport.Read();
 
   if (handler == 0) return esp;
 
-  buffer[offset] = dataport.Read();
   offset = (offset + 1) % 3;
 
   if (offset == 0) {
@@ -74,8 +75,8 @@ uint32_t MouseDriver::HandleInterrupt(uint32_t esp) {
     }
 
     for (uint8_t i = 0; i < 3; i++) {
-      if ((buffer[0] & (0x1 << 1)) != (buttons & (0x1 << 1))) {
-        if (buttons & (0x1 << 1)) {
+      if ((buffer[0] & (0x1 << i)) != (buttons & (0x1 << i))) {
+        if (buttons & (0x1 << i)) {
           handler->OnMouseUp(i + 1);
         }
         else {

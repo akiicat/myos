@@ -33,7 +33,7 @@ EtherFrameProvider::EtherFrameProvider(amd_am79c973* backend)
     handlers[i] = 0;
   }
 }
-  
+
 EtherFrameProvider::~EtherFrameProvider() {
 
 }
@@ -76,10 +76,10 @@ bool EtherFrameProvider::OnRawDataReceived(uint8_t* buffer, uint32_t size) {
   return sendBack;
 }
 
-void EtherFrameProvider::Send(uint64_t dstMAC_BE, uint16_t etherType_BE, uint8_t* src_buffer, uint32_t size) {
+void EtherFrameProvider::Send(uint64_t dstMAC_BE, uint16_t etherType_BE, uint8_t* buffer, uint32_t size) {
   // we get the memory from the header plus the size of the buffer that we want to send
-  uint8_t* dst_buffer = (uint8_t*)MemoryManager::activeMemoryManager->malloc(sizeof(EtherFrameHeader) + size);
-  EtherFrameHeader* frame = (EtherFrameHeader*)dst_buffer;
+  uint8_t* buffer2 = (uint8_t*)MemoryManager::activeMemoryManager->malloc(sizeof(EtherFrameHeader) + size);
+  EtherFrameHeader* frame = (EtherFrameHeader*)buffer2;
 
   // impose a header on it again
   frame->dstMAC_BE = dstMAC_BE;
@@ -87,14 +87,14 @@ void EtherFrameProvider::Send(uint64_t dstMAC_BE, uint16_t etherType_BE, uint8_t
   frame->etherType_BE = etherType_BE;
 
   // we just copy the buffer from this `src_buffer` to this `dst_buffer`
-  uint8_t* src = src_buffer;
-  uint8_t* dst = dst_buffer + sizeof(EtherFrameHeader);
+  uint8_t* src = buffer;
+  uint8_t* dst = buffer2 + sizeof(EtherFrameHeader);
   for (uint32_t i = 0; i < size; i++) {
     dst[i] = src[i];
   }
 
   // pass `dst_buffer` the backend
-  backend->Send(dst_buffer, size + sizeof(EtherFrameHeader));
+  backend->Send(buffer2, size + sizeof(EtherFrameHeader));
 }
 
 uint32_t EtherFrameProvider::GetIPAddress() {

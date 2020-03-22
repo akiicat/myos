@@ -25,12 +25,12 @@ void RawDataHandler::Send(uint8_t* buffer, uint32_t size) {
 void printf(char*);
 void printfHex(uint8_t);
 
-amd_am79c973::amd_am79c973(PeripheralComponentInterconnectDeviceDescriptor* dev, InterruptManager* interrupts)
+amd_am79c973::amd_am79c973(PeripheralComponentInterconnectDeviceDescriptor *dev, InterruptManager* interrupts)
 : Driver(),
   InterruptHandler(interrupts, dev->interrupt + interrupts->HardwareInterruptOffset()),
   MACAddress0Port(dev->portBase),
-  MACAddress2Port(dev->portBase + 0x2),
-  MACAddress4Port(dev->portBase + 0x4),
+  MACAddress2Port(dev->portBase + 0x02),
+  MACAddress4Port(dev->portBase + 0x04),
   registerDataPort(dev->portBase + 0x10),
   registerAddressPort(dev->portBase + 0x12),
   resetPort(dev->portBase + 0x14),
@@ -73,11 +73,11 @@ amd_am79c973::amd_am79c973(PeripheralComponentInterconnectDeviceDescriptor* dev,
   initBlock.reserved3 = 0;
   initBlock.logicalAddress = 0;
 
-  sendBufferDescr = (BufferDescriptor*)((((uint32_t)&sendBufferDescMemory[0]) + 15) & ~((uint32_t)0xF));
+  sendBufferDescr = (BufferDescriptor*)((((uint32_t)&sendBufferDescrMemory[0]) + 15) & ~((uint32_t)0xF));
   initBlock.sendBufferDescrAddress = (uint32_t)sendBufferDescr;
-  recvBufferDescr = (BufferDescriptor*)((((uint32_t)&recvBufferDescMemory[0]) + 15) & ~((uint32_t)0xF));
+  recvBufferDescr = (BufferDescriptor*)((((uint32_t)&recvBufferDescrMemory[0]) + 15) & ~((uint32_t)0xF));
   initBlock.recvBufferDescrAddress = (uint32_t)recvBufferDescr;
-  
+
   for (uint8_t i = 0; i < 8; i++) {
     sendBufferDescr[i].address = (((uint32_t)&sendBuffers[i]) + 15) & ~(uint32_t)0xF;
     sendBufferDescr[i].flags = 0x7FF | 0xF000;
@@ -172,7 +172,7 @@ void amd_am79c973::Send(uint8_t* buffer, int size) {
   }
 
   printf("Sending: ");
-  for (int i = 0; i < size; i++) {
+  for(int i = 0; i < size; i++) {
     printfHex(buffer[i]);
     printf(" ");
   }
@@ -249,11 +249,12 @@ void amd_am79c973::Receive() {
         printf(" ");
       }
 
-      // in the end of the loop, we have finished handling this
-      // so you can have this back
-      recvBufferDescr[currentRecvBuffer].flags2 = 0;
-      recvBufferDescr[currentRecvBuffer].flags = 0x8000F7FF;
     }
+
+    // in the end of the loop, we have finished handling this
+    // so you can have this back
+    recvBufferDescr[currentRecvBuffer].flags2 = 0;
+    recvBufferDescr[currentRecvBuffer].flags = 0x8000F7FF;
   }
 }
 

@@ -62,7 +62,7 @@ bool PeripheralComponentInterconnectController::DeviceHasFunctions(uint16_t bus,
 void printf(char*);
 void printfHex(uint8_t);
 
-void PeripheralComponentInterconnectController::SelectDrivers(DriverManager* driverManager, InterruptManager* interrupts) {
+void PeripheralComponentInterconnectController::SelectDrivers(DriverManager* driverManager, myos::hardwarecommunication::InterruptManager* interrupts) {
   for (int bus = 0; bus < 8; bus++) {
 
     for (int device = 0; device < 32; device++) {
@@ -188,15 +188,12 @@ BaseAddressRegister PeripheralComponentInterconnectController::GetBaseAddressReg
       // the manufacturers of devices often use these bits for somthing else
       // these zeros tell you well the memory location that
       // I'm using for the memory mapping must start at an offset that is a multiple of 16 of 32 or whaterer
-      case 0:  // 32 Bit Mode
-        break;
-      case 1:  // 20 Bit Mode
-        break;
-      case 2:  // 64 Bit Mode
+      case 0: // 32 Bit Mode
+      case 1: // 20 Bit Mode
+      case 2: // 64 Bit Mode
         break;
     }
 
-    result.prefetchable = ((bar_value >> 3) & 0x1) == 0x1;
   }
 
   // I/O Space BAR Layout
@@ -227,6 +224,7 @@ Driver* PeripheralComponentInterconnectController::GetDriver(PeripheralComponent
     case 0x1022: // AMD
       switch(dev.device_id) {
         case 0x2000: // am79c973 driver
+          printf("AMD am79c973 ");
           // you allocated a size of class you give here and then
           // you have to check explicitly if this is 0
           // only if it is not NULL you call the constructor explicitly
@@ -234,8 +232,10 @@ Driver* PeripheralComponentInterconnectController::GetDriver(PeripheralComponent
           if (driver != 0) {
             new (driver) amd_am79c973(&dev, interrupts);
           }
+          else {
+            printf("instantiation failed");
+          }
 
-          printf("AMD am79c973");
           return driver;
           break;
       }

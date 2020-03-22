@@ -10,7 +10,6 @@ Window::Window(Widget* parent, int32_t x, int32_t y, int32_t w, int32_t h, uint8
 }
 
 Window::~Window() {
-  
 }
 
 void Window::OnMouseDown(int32_t x, int32_t y, uint8_t button) {

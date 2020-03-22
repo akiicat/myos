@@ -17,7 +17,7 @@ void KeyboardEventHandler::OnKeyDown(char) {
 void KeyboardEventHandler::OnKeyUp(char) {
 }
 
-KeyboardDriver::KeyboardDriver(InterruptManager *manager, KeyboardEventHandler *handler)
+KeyboardDriver::KeyboardDriver(InterruptManager* manager, KeyboardEventHandler *handler)
 : InterruptHandler(manager, 0x21),
   dataport(0x60),
   commandport(0x64)
@@ -53,7 +53,7 @@ uint32_t KeyboardDriver::HandleInterrupt(uint32_t esp) {
     return esp;
   }
 
-  if (key <= 0x80) {
+  if (key < 0x80) {
 
     switch(key) {
       case 0x02: handler->OnKeyDown('1'); break;
@@ -102,10 +102,12 @@ uint32_t KeyboardDriver::HandleInterrupt(uint32_t esp) {
       case 0x1C: handler->OnKeyDown('\n'); break;
       case 0x39: handler->OnKeyDown(' '); break;
 
-
-      default: 
-        printf("KEYBOARD 0x");
-        printfHex(key);
+      default:
+        {
+          printf("KEYBOARD 0x");
+          printfHex(key);
+          break;
+        }
     }
   }
 

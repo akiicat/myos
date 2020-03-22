@@ -27,13 +27,14 @@ namespace myos {
         bool Focussable;
 
       public:
+
         Widget(Widget* parent,
             common::int32_t x, common::int32_t y, common::int32_t w, common::int32_t h,
             common::uint8_t r, common::uint8_t g, common::uint8_t b);
         ~Widget();
 
         virtual void GetFocus(Widget* widget);
-        virtual void ModelToScreen(common::int32_t &x, common::int32_t &y);
+        virtual void ModelToScreen(common::int32_t &x, common::int32_t& y);
         virtual bool ContainsCoordinate(common::int32_t x, common::int32_t y);
 
         virtual void Draw(common::GraphicsContext* gc);

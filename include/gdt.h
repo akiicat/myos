@@ -38,7 +38,7 @@ namespace myos {
           common::uint16_t base_lo;
           common::uint8_t base_hi;
           common::uint8_t type;
-          common::uint8_t flags_limit_hi;
+          common::uint8_t limit_hi;
           common::uint8_t base_vhi;
 
         public:

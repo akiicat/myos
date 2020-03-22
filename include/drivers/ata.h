@@ -1,8 +1,9 @@
 #ifndef __MYOS__DRIVERS__ATA_H
 #define __MYOS__DRIVERS__ATA_H
 
-#include <hardwarecommunication/port.h>
 #include <common/types.h>
+#include <hardwarecommunication/interrupts.h>
+#include <hardwarecommunication/port.h>
 
 // PCI settings for hard disk driver:
 // - class ID: 0x01
@@ -104,6 +105,10 @@ namespace myos {
 
     class AdvancedTechnologyAttachment {
       protected:
+        // you can also read the information how many bytes are in a sector
+        // but I'm not going to this. Just set this number to 512 that's it.
+        bool master;
+
         // communicate the controller has 9 ports
 
         // the data port through which we sent the data that we want to write
@@ -134,11 +139,6 @@ namespace myos {
         // control port which is also used for status messages
         hardwarecommunication::Port8Bit controlPort;
 
-        // you can also read the information how many bytes are in a sector
-        // but I'm not going to this. Just set this number to 512 that's it.
-        bool master;
-        common::uint16_t bytesPerSector;
-
       public:
         // hard code the port number
         // we do have multiple of the ATA buses
@@ -149,7 +149,7 @@ namespace myos {
         // which are two hard drives on the same bus
         // actually the words master and slave don't mean anything
         // it's just a random words to describe to distinguish one of the hard drives and the other one
-        AdvancedTechnologyAttachment(common::uint16_t portBase, bool master);
+        AdvancedTechnologyAttachment(bool master, common::uint16_t portBase);
         ~AdvancedTechnologyAttachment();
 
         // the operations that we really wnat to implement
@@ -159,8 +159,8 @@ namespace myos {
 
         // sector number is a 32 bit integer
         // so the highest bits of that just need to be ignored
-        void Read28(common::uint32_t sector, common::uint8_t* data, int count);
-        void Write28(common::uint32_t sector, common::uint8_t* data, int count);
+        void Read28(common::uint32_t sectorNum, int count = 512);
+        void Write28(common::uint32_t sectorNum, common::uint8_t* data, common::uint32_t count);
 
         // to flush the cache of half drive because the thing is when you write to a hard drive,
         // the hard drive first buffers that data in an internal buffer and then you have to flush the buffer

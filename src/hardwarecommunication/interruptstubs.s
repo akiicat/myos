@@ -3,7 +3,6 @@
 .section .text
 
 .extern _ZN4myos21hardwarecommunication16InterruptManager15HandleInterruptEhj
-.global _ZN4myos21hardwarecommunication16InterruptManager22IgnoreInterruptRequestEv
 
 # interrupt service routines
 .macro HandleException num
@@ -107,8 +106,9 @@ int_bottom:
   push (interruptnumber)
   call _ZN4myos21hardwarecommunication16InterruptManager15HandleInterruptEhj
 
+  # add %esp, 6
   # add $5, %esp   # pop the old stack pointer
-  movl %eax, %esp  # overwrite esp with the result value from the handleInterrupt function
+  mov %eax, %esp # switch the stack # overwrite esp with the result value from the handleInterrupt function
 
   # restore registers
   popl %eax
@@ -129,8 +129,9 @@ int_bottom:
   # we need to add 4 to ESP so here we pop that again
   add $4, %esp
 
+.global _ZN4myos21hardwarecommunication16InterruptManager15InterruptIgnoreEv
 
-_ZN4myos21hardwarecommunication16InterruptManager22IgnoreInterruptRequestEv:
+_ZN4myos21hardwarecommunication16InterruptManager15InterruptIgnoreEv:
   # at the end of this, we need to tell the porcess okay
   # we are finished handling the interrupts so you can return to what you were doing before
   # or if we have switched the stack then it will jump it will work on the diffreent process

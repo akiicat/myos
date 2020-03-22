@@ -41,17 +41,15 @@ MemoryManager::~MemoryManager() {
 }
 
 void* MemoryManager::malloc(size_t size) {
-
   // it doest that in a relatively slow way
   // you know if we allocate a million bytes one by one then the next allocation will take a million iterations to find some free space
   //
   // iterate through the list of chunks and look for a chunk that is large enough
   MemoryChunk *result = 0;
-  for (MemoryChunk *chunk = first; chunk != 0; chunk = chunk->next) {
+  for (MemoryChunk* chunk = first; chunk != 0 && result == 0; chunk = chunk->next) {
     // chunk is free and large enough
     if (chunk->size > size && !chunk->allocated) {
       result = chunk;
-      break;
     }
   }
 
@@ -79,23 +77,24 @@ void* MemoryManager::malloc(size_t size) {
   // 
   if (result->size >= size + sizeof(MemoryChunk) + 1) {
     // make a new chunk ane we put that after to the result
-    MemoryChunk *temp = (MemoryChunk*)((size_t)result + sizeof(MemoryChunk) + size);
+    MemoryChunk* temp = (MemoryChunk*)((size_t)result + sizeof(MemoryChunk) + size);
 
     temp->allocated = false;
 
     // calculate the new chunk size: just cut off the new chunk and the size of requested
     temp->size = result->size - sizeof(MemoryChunk) - size;
-    result->size = size;
 
     // modify pointer
     temp->prev = result;
     temp->next = result->next;
-    result->next = temp;
 
     // if there is something, set previous point must be set to temp
     if (temp->next != 0) {
       temp->next->prev = temp;
     }
+
+    result->size = size;
+    result->next = temp;
   }
 
   // result size is not larger than the requested size + the size of a new memory chunk + one byte of new size
@@ -132,7 +131,7 @@ void MemoryManager::free(void* ptr) {
   //   +----------------+--------------------------------+
   //   ^                ^
   // chunk             ptr
-  MemoryChunk *chunk = (MemoryChunk*)((size_t)ptr - sizeof(MemoryChunk));
+  MemoryChunk* chunk = (MemoryChunk*)((size_t)ptr - sizeof(MemoryChunk));
 
   chunk->allocated = false;
 
@@ -179,7 +178,6 @@ void* operator new[](unsigned size) {
   return myos::MemoryManager::activeMemoryManager->malloc(size);
 }
 
-// 
 void* operator new(unsigned size, void* ptr) {
   return ptr;
 }

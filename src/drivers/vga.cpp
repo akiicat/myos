@@ -37,6 +37,8 @@ void VideoGraphicsArray::WriteRegisters(uint8_t* registers) {
     sequencerDataPort.Write(*(registers++));
   }
 
+  // cathode ray tube controller
+  //
   // this is a security feature for doing something mutual exclusion
   // because the cathode ray tube controller can blow up if you will send the wrong data
   // so you need to unlock it send data and then lock it again
@@ -65,7 +67,7 @@ void VideoGraphicsArray::WriteRegisters(uint8_t* registers) {
     crtcIndexPort.Write(i);
     crtcDataPort.Write(*(registers++));
   }
-  
+
   // graphics controller (GC)
   for (uint8_t i = 0; i < 9; i++) {
     graphicsControllerIndexPort.Write(i);
@@ -109,7 +111,7 @@ bool VideoGraphicsArray::SetMode(uint32_t width, uint32_t height, uint32_t color
     /* CRTC */
     0x5F, 0x4F, 0x50, 0x82, 0x54, 0x80, 0xBF, 0x1F,
     0x00, 0x41, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-    0x9C, 0x0E, 0x8F, 0x28,	0x40, 0x96, 0xB9, 0xA3,
+    0x9C, 0x0E, 0x8F, 0x28, 0x40, 0x96, 0xB9, 0xA3,
     0xFF,
     /* GC */
     0x00, 0x00, 0x00, 0x00, 0x00, 0x40, 0x05, 0x0F,
@@ -117,7 +119,7 @@ bool VideoGraphicsArray::SetMode(uint32_t width, uint32_t height, uint32_t color
     /* AC */
     0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07,
     0x08, 0x09, 0x0A, 0x0B, 0x0C, 0x0D, 0x0E, 0x0F,
-    0x41, 0x00, 0x0F, 0x00,	0x00
+    0x41, 0x00, 0x0F, 0x00, 0x00
   };
 
   // pass g_320x200x256 to the WriteRegisters
@@ -132,17 +134,17 @@ uint8_t* VideoGraphicsArray::GetFrameBufferSegment() {
 
   // get the graphicsControllerDataPort
   // we are only interested in the bits number three and four
-  uint8_t segmentNumber = ((graphicsControllerDataPort.Read() >> 2) & 0x03);
+  uint8_t segmentNumber = graphicsControllerDataPort.Read() & (3<<2);
 
   switch (segmentNumber) {
     // the compiler complains if you don't have a default value here
     default:
 
     // if this is 0 then we need to write 0x00000 to the memory location
-    case 0: return (uint8_t*)0x00000;
-    case 1: return (uint8_t*)0xA0000;
-    case 2: return (uint8_t*)0x80000;
-    case 3: return (uint8_t*)0xB8000;
+    case 0<<2: return (uint8_t*)0x00000;
+    case 1<<2: return (uint8_t*)0xA0000;
+    case 2<<2: return (uint8_t*)0xB0000;
+    case 3<<2: return (uint8_t*)0xB8000;
   }
 }
 

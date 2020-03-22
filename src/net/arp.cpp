@@ -8,7 +8,7 @@ using namespace myos::drivers;
 void printf(char*);
 void printfHex(uint8_t);
 
-AddressResolutionProtocol::AddressResolutionProtocol(EtherFrameProvider* backend) 
+AddressResolutionProtocol::AddressResolutionProtocol(EtherFrameProvider* backend)
   : EtherFrameHandler(backend, 0x806) // 0x806 for ARP
 {
   numCacheEntries = 0;
@@ -45,6 +45,7 @@ bool AddressResolutionProtocol::OnEtherFrameReceived(uint8_t* etherframePayload,
 
       // If message is for us, look what is the command.
       switch(arp->command) {
+
         case 0x0100: // request
           // If we are asked for our mac address, we change the command
           // into a response.

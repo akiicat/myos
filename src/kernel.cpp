@@ -38,8 +38,8 @@ using namespace myos::net;
 // +-------------------------------------------------------------------+
 //
 // screen = 25 x 80 char
-void printf(char *str) {
-  static uint16_t * VideoMemory = (uint16_t *) 0xb8000;
+void printf(char* str) {
+  static uint16_t* VideoMemory = (uint16_t*)0xb8000;
 
   static uint8_t x = 0, y = 0;
 
@@ -55,7 +55,6 @@ void printf(char *str) {
         x++;
     }
 
-
     if (x >= 80) {
       y++;
       x = 0;
@@ -65,39 +64,35 @@ void printf(char *str) {
       for (y = 0; y < 25; y++) {
         for (x = 0; x < 80; x++) {
           VideoMemory[80 * y + x] = (VideoMemory[80 * y + x] & 0xFF00) | ' ';
-          x++;
         }
       }
-
       x = 0;
       y = 0;
     }
-
   }
 }
 
 void printfHex(uint8_t key) {
   char* foo = "00";
   char* hex = "0123456789ABCDEF";
-  foo[0] = hex[(key >> 4) & 0x0F];
-  foo[1] = hex[key & 0x0F];
+  foo[0] = hex[(key >> 4) & 0xF];
+  foo[1] = hex[key & 0xF];
   printf(foo);
 }
 
 void printfHex16(uint16_t key) {
-    printfHex((key >> 8) & 0xFF);
-    printfHex( key & 0xFF);
+  printfHex((key >> 8) & 0xFF);
+  printfHex( key & 0xFF);
 }
 
 void printfHex32(uint32_t key) {
-    printfHex((key >> 24) & 0xFF);
-    printfHex((key >> 16) & 0xFF);
-    printfHex((key >> 8) & 0xFF);
-    printfHex( key & 0xFF);
+  printfHex((key >> 24) & 0xFF);
+  printfHex((key >> 16) & 0xFF);
+  printfHex((key >> 8) & 0xFF);
+  printfHex( key & 0xFF);
 }
 
 class PrintfKeyboardEventHandler : public KeyboardEventHandler {
-    int8_t x, y;
   public:
     void OnKeyDown(char c) {
       char* foo = " ";
@@ -111,36 +106,34 @@ class MouseToConsole : public MouseEventHandler {
   public:
     MouseToConsole() {
       // initialize the cursor
-      static uint16_t * VideoMemory = (uint16_t *) 0xb8000;
+      uint16_t* VideoMemory = (uint16_t*)0xb8000;
       x = 40;
       y = 12;
-      VideoMemory[80 * y + x] = ((VideoMemory[80 * y + x] & 0xF000) >> 4)
-                              | ((VideoMemory[80 * y + x] & 0x0F00) << 4)
-                              |  (VideoMemory[80 * y + x] & 0x00FF);
+      VideoMemory[80 * y + x] = ((VideoMemory[80 * y + x] & 0x0F00) << 4)
+                              | ((VideoMemory[80 * y + x] & 0xF000) >> 4)
+                              |  (VideoMemory[80 * y + x] & 0x00FF);        
     }
 
-    void OnMouseMove(int xoffset, int yoffset) {
+    virtual void OnMouseMove(int xoffset, int yoffset) {
       // display mouse on the screen
-      static uint16_t * VideoMemory = (uint16_t *) 0xb8000;
-
+      static uint16_t* VideoMemory = (uint16_t*)0xb8000;
       // flip back the old position to the original state
-      VideoMemory[80 * y + x] = ((VideoMemory[80 * y + x] & 0xF000) >> 4)
-                              | ((VideoMemory[80 * y + x] & 0x0F00) << 4)
-                              | ((VideoMemory[80 * y + x] & 0x00FF));
+      VideoMemory[80 * y + x] = (VideoMemory[80 * y + x] & 0x0F00) << 4
+                              | (VideoMemory[80 * y + x] & 0xF000) >> 4
+                              | (VideoMemory[80 * y + x] & 0x00FF);
 
       // move the cursor
       x += xoffset;
-      if (x < 0) x = 0;
       if (x >= 80) x = 79;
-
+      if (x < 0) x = 0;
       y += yoffset;
-      if (y < 0) y = 0;
       if (y >= 25) y = 24;
+      if (y < 0) y = 0;
 
       // flip the new position
-      VideoMemory[80 * y + x] = ((VideoMemory[80 * y + x] & 0xF000) >> 4)
-                              | ((VideoMemory[80 * y + x] & 0x0F00) << 4)
-                              | ((VideoMemory[80 * y + x] & 0x00FF));
+      VideoMemory[80 * y + x] = (VideoMemory[80 * y + x] & 0x0F00) << 4
+                              | (VideoMemory[80 * y + x] & 0xF000) >> 4
+                              | (VideoMemory[80 * y + x] & 0x00FF);
     }
 };
 
@@ -161,7 +154,7 @@ extern "C" void callConstructors() {
   }
 }
 
-extern "C" void kernelMain(void *multiboot_structure, uint16_t magicnumber) {
+extern "C" void kernelMain(const void* multiboot_structure, uint32_t /*multiboot_magic*/) {
   printf("Hello World!\n");
 
   GlobalDescriptorTable gdt;
@@ -202,14 +195,14 @@ extern "C" void kernelMain(void *multiboot_structure, uint16_t magicnumber) {
   printfHex((heap >> 24) & 0xFF);
   printfHex((heap >> 16) & 0xFF);
   printfHex((heap >>  8) & 0xFF);
-  printfHex((heap >>  0) & 0xFF);
+  printfHex((heap      ) & 0xFF);
 
   void* allocated = memoryManager.malloc(1024);
   printf("\nallocated: 0x");
   printfHex(((size_t)allocated >> 24) & 0xFF);
   printfHex(((size_t)allocated >> 16) & 0xFF);
   printfHex(((size_t)allocated >>  8) & 0xFF);
-  printfHex(((size_t)allocated >>  0) & 0xFF);
+  printfHex(((size_t)allocated      ) & 0xFF);
   printf("\n");
 
   // the reason why I instantiated it up there is because
@@ -222,7 +215,7 @@ extern "C" void kernelMain(void *multiboot_structure, uint16_t magicnumber) {
   taskManager.AddTask(&task2);
 #endif
 
-  InterruptManager interrupts(&gdt, &taskManager);
+  InterruptManager interrupts(0x20, &gdt, &taskManager);
   SyscallHandler syscalls(&interrupts, 0x80);
 
   printf("Initializing Hardware, Stage 1\n");
@@ -273,34 +266,40 @@ extern "C" void kernelMain(void *multiboot_structure, uint16_t magicnumber) {
 
 #ifdef ATA
   // interrupt 14
-  AdvancedTechnologyAttachment ata0m(0x1F0, true); // master, portBase: 0x1F0
-  printf("ATA Primary Master: ");
+  printf("\nS-ATA primary master: ");
+  AdvancedTechnologyAttachment ata0m(true, 0x1F0); // master, portBase: 0x1F0
   ata0m.Identify();
 
-  AdvancedTechnologyAttachment ata0s(0x1F0, false); // slave
-  printf("ATA Primary Slave: ");
+  printf("\nS-ATA primary slave: ");
+  AdvancedTechnologyAttachment ata0s(false, 0x1F0); // slave
   ata0s.Identify();
 
   // write something to the disk and flush. after that read it.
-  char* ataBuffer = "Hello World\n";
-  ata0s.Write28(0, (uint8_t*)ataBuffer, 13);
+  ata0s.Write28(0, (uint8_t*)"Hello World", 13);
   ata0s.Flush();
-  ata0s.Read28(0, (uint8_t*)ataBuffer, 13);
+  ata0s.Read28(0, 13);
 
   // interrupt 15
-  AdvancedTechnologyAttachment ata1m(0x170, true); // master, portBase: 0x1F0
-  AdvancedTechnologyAttachment ata1s(0x170, false); // slave
+  printf("\nS-ATA secondary master: ");
+  AdvancedTechnologyAttachment ata1m(true, 0x170); // master, portBase: 0x1F0
+  ata1m.Identify();
+
+  printf("\nS-ATA secondary slave: ");
+  AdvancedTechnologyAttachment ata1s(false, 0x170); // slave
+  ata1s.Identify();
 
   // third portBase: 0x1E8
   // fourth portBase: 0x168
 #endif
 
   // This was an IP address that virualbox will accept 10.0.2.15
+  // IP 10.0.2.15
   uint8_t ip1 = 10, ip2 = 0, ip3 = 2, ip4 = 15; // ip
   uint32_t ip_be = ((uint32_t)ip4 << 24)
                  | ((uint32_t)ip3 << 16)
                  | ((uint32_t)ip2 << 8)
                  | ((uint32_t)ip1);
+  // IP 10.0.2.2
   uint8_t gip1 = 10, gip2 = 0, gip3 = 2, gip4 = 2; // gateway
   uint32_t gip_be = ((uint32_t)gip4 << 24)
                   | ((uint32_t)gip3 << 16)
@@ -330,6 +329,7 @@ extern "C" void kernelMain(void *multiboot_structure, uint16_t magicnumber) {
   // ARP: We can get an answer only after the interrputs are activated.
   // Because when we get an answer, this is done through an interrupt handler.
   // printf("\n");
+  printf("\n\n\n\n\n\n\n\n");
   arp.Resolve(gip_be); // request gateway ip
 
   // when we start the multitasking,

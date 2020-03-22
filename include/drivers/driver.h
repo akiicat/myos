@@ -12,12 +12,12 @@ namespace myos {
 
         virtual void Activate();
         virtual int Reset();
-        void Deactivate();
+        virtual void Deactivate();
     };
 
     class DriverManager {
       public:  // must private, but temporary for public
-        Driver* drivers[255];
+        Driver* drivers[265];
         int numDrivers;
 
       public:

@@ -1,9 +1,9 @@
 #ifndef __MYOS__HARDWARECOMMUNICATION__PCI_H
 #define __MYOS__HARDWARECOMMUNICATION__PCI_H
 
-#include <common/types.h>
-#include <drivers/driver.h>
 #include <hardwarecommunication/port.h>
+#include <drivers/driver.h>
+#include <common/types.h>
 #include <hardwarecommunication/interrupts.h>
 
 #include <memorymanagement.h>

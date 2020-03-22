@@ -3,22 +3,21 @@
 using namespace myos;
 using namespace myos::common;
 using namespace myos::drivers;
-using namespace myos::hardwarecommunication;
 
 void printf(char*);
+void printfHex(uint8_t);
 
-AdvancedTechnologyAttachment::AdvancedTechnologyAttachment(common::uint16_t portBase, bool master)
+AdvancedTechnologyAttachment::AdvancedTechnologyAttachment(bool master, common::uint16_t portBase)
 : dataPort(portBase),
-  errorPort(portBase + 1),
-  sectorCountPort(portBase + 2),
-  lbaLowPort(portBase + 3),
-  lbaMidPort(portBase + 4),
-  lbaHiPort(portBase + 5),
-  devicePort(portBase + 6),
-  commandPort(portBase + 7),
+  errorPort(portBase + 0x1),
+  sectorCountPort(portBase + 0x2),
+  lbaLowPort(portBase + 0x3),
+  lbaMidPort(portBase + 0x4),
+  lbaHiPort(portBase + 0x5),
+  devicePort(portBase + 0x6),
+  commandPort(portBase + 0x7),
   controlPort(portBase + 0x206)
 {
-  bytesPerSector = 512;
   this->master = master;
 }
 
@@ -44,7 +43,7 @@ void AdvancedTechnologyAttachment::Identify() {
   devicePort.Write(master ? 0xA0 : 0xB0);
 
   // how many sectors you want to read or write
-  controlPort.Write(0);
+  sectorCountPort.Write(0);
 
   // the number of the sector you want to read or write
   lbaLowPort.Write(0);
@@ -52,7 +51,7 @@ void AdvancedTechnologyAttachment::Identify() {
   lbaHiPort.Write(0);
 
   // give a read or write command
-  commandPort.Write(0xEC);
+  commandPort.Write(0xEC); // identify command
 
   // then wait until the device is read
   status = commandPort.Read();
@@ -74,44 +73,39 @@ void AdvancedTechnologyAttachment::Identify() {
   }
 
   // data is ready and now we can read a sector, 512 bytes
-  for (uint16_t i = 0; i < 256; i++) {
+  for (int i = 0; i < 256; i++) {
     // read the data and just print the data that we get
     uint16_t data = dataPort.Read();
-    char *foo = "  \0";
-    foo[1] = (data >> 8) & 0x00FF;
-    foo[1] = data & 0x00FF;
-    printf(foo);
+    char *text = "  \0";
+    text[0] = (data >> 8) & 0xFF;
+    text[1] = data & 0xFF;
+    printf(text);
   }
+  printf("\n");
 }
 
-void AdvancedTechnologyAttachment::Read28(common::uint32_t sector, common::uint8_t* data, int count) {
+void AdvancedTechnologyAttachment::Read28(common::uint32_t sectorNum, int count) {
   // you cannot write to a sector larger than what you can address with 28 bits here
   // so we need to check the first four bits are zero
-  if (sector & 0xF0000000) {
-    return;
-  }
-
-  // this is only to write one sector 
-  // if you try to write too much, just refuse that
-  if (count > bytesPerSector) {
+  if (sectorNum > 0x0FFFFFFF) {
     return;
   }
 
   // reading and writing in 28 bit mode
   // so what we do is put these into the device port
-  devicePort.Write((master ? 0xE0 : 0xF0) | ((sector & 0xF0000000) >> 24));
+  devicePort.Write((master ? 0xE0 : 0xF0) | ((sectorNum & 0x0F000000) >> 24));
 
   // clear the previous error message
   errorPort.Write(0);
 
   // always read or write a single sector
-  controlPort.Write(0);
+  sectorCountPort.Write(1);
 
   // split the sector number and put it into these 3 ports
   // so that gives you only 24 bits to send and four bits are left from the address
-  lbaLowPort.Write(sector & 0x000000FF);
-  lbaMidPort.Write((sector & 0x0000FF00) >> 8);
-  lbaHiPort.Write((sector & 0x00FF0000) >> 16);
+  lbaLowPort.Write(  sectorNum & 0x000000FF );
+  lbaMidPort.Write( (sectorNum & 0x0000FF00) >> 8);
+  lbaLowPort.Write( (sectorNum & 0x00FF0000) >> 16 );
 
   // give a read or write command
   commandPort.Write(0x20);
@@ -134,62 +128,60 @@ void AdvancedTechnologyAttachment::Read28(common::uint32_t sector, common::uint8
     return;
   }
 
-  printf("Reading from ATA: ");
+  printf("Reading ATA Drive: ");
 
-  for (uint16_t i = 0; i < count; i += 2) {
+  for (int i = 0; i < count; i += 2) {
     // we want to write data to this data array
     uint16_t wdata = dataPort.Read();
 
     // print the data before we send it
-    char *foo = "  \0";
-    foo[1] = (wdata >> 8) & 0x00FF;
-    foo[0] = wdata & 0x00FF;
-    printf(foo);
-
-    data[i] = wdata & 0x00FF;
-
-    // the next 8 bits also need to be requested it
-    if (i + 1 < count) {
-      data[i+1] =  (wdata >> 8) & 0x00FF;
+    char *text = "  \0";
+    text[0] = wdata & 0xFF;
+    if(i+1 < count) {
+      text[1] = (wdata >> 8) & 0xFF;
+    }
+    else {
+      text[1] = '\0';
     }
 
+    printf(text);
   }
 
   // read a full sector
-  for (uint16_t i = count + (count & 0x1); i < bytesPerSector; i += 2) {
+  for (int i = count + (count%2); i < 512; i += 2) {
     dataPort.Read();
   }
 
 }
 
-void AdvancedTechnologyAttachment::Write28(common::uint32_t sector, common::uint8_t* data, int count) {
+void AdvancedTechnologyAttachment::Write28(common::uint32_t sectorNum, common::uint8_t* data, common::uint32_t count) {
   // you cannot write to a sector larger than what you can address with 28 bits here
   // so we need to check the first four bits are zero
-  if (sector & 0xF0000000) {
+  if (sectorNum > 0x0FFFFFFF) {
     return;
   }
 
   // this is only to write one sector 
   // if you try to write too much, just refuse that
-  if (count > bytesPerSector) {
+  if (count > 512) {
     return;
   }
 
   // reading and writing in 28 bit mode
   // so what we do is put these into the device port
-  devicePort.Write((master ? 0xE0 : 0xF0) | ((sector & 0xF0000000) >> 24));
+  devicePort.Write((master ? 0xE0 : 0xF0) | ((sectorNum & 0x0F000000) >> 24));
 
   // clear the previous error message
   errorPort.Write(0);
 
   // always read or write a single sector
-  controlPort.Write(0);
+  sectorCountPort.Write(1);
 
   // split the sector number and put it into these 3 ports
   // so that gives you only 24 bits to send and four bits are left from the address
-  lbaLowPort.Write(sector & 0x000000FF);
-  lbaMidPort.Write((sector & 0x0000FF00) >> 8);
-  lbaHiPort.Write((sector & 0x00FF0000) >> 16);
+  lbaLowPort.Write(  sectorNum & 0x000000FF );
+  lbaMidPort.Write( (sectorNum & 0x0000FF00) >> 8);
+  lbaLowPort.Write( (sectorNum & 0x00FF0000) >> 16 );
 
   // give a read or write command
   commandPort.Write(0x30);
@@ -197,7 +189,7 @@ void AdvancedTechnologyAttachment::Write28(common::uint32_t sector, common::uint
   printf("Writing to ATA: ");
 
   // write the number of bytes in this data
-  for (uint16_t i = 0; i < count; i += 2) {
+  for (int i = 0; i < count; i += 2) {
     // take the first bits from the data array here
     uint16_t wdata = data[i];
 
@@ -205,17 +197,16 @@ void AdvancedTechnologyAttachment::Write28(common::uint32_t sector, common::uint
     if (i + 1 < count) {
       wdata |= ((uint16_t)data[i+1]) << 8;
     }
-
-    // print the data before we send it
-    char *foo = "  \0";
-    foo[1] = (wdata >> 8) & 0x00FF;
-    foo[0] = wdata & 0x00FF;
-    printf(foo);
-
     // the device always expects us to send as many bytes as in a sector
     // so we always have to write a full sector
     // otherwise we would get an interrupt with an error message
     dataPort.Write(wdata);
+
+    // print the data
+    char *text = "  \0";
+    text[0] = (wdata >> 8) & 0xFF;
+    text[1] = wdata & 0xFF;
+    printf(text);
   }
 
   // if we write less than the 512 bytes, we filled the reset of the sector with zeros
@@ -223,7 +214,7 @@ void AdvancedTechnologyAttachment::Write28(common::uint32_t sector, common::uint
   // inside the above loop with empty value was 0 for that bytes
   // so in that case just to cover that.
   // Add count modulus 2 to the initialize
-  for (uint16_t i = count + (count & 0x1); i < bytesPerSector; i += 2) {
+  for (int i = count + (count%2); i < 512; i += 2) {
     dataPort.Write(0x0000);
   }
 }
@@ -238,6 +229,10 @@ void AdvancedTechnologyAttachment::Flush() {
 
   // we didn't wait before after the writing but now have to wait device is flushing
   uint8_t status = commandPort.Read();
+  if (status == 0x00) {
+    return;
+  }
+
   while (((status & 0x80) == 0x80) // if device is busy
       && ((status & 0x01) != 0x01)) { // if device has error
     status = commandPort.Read();

@@ -2,8 +2,8 @@
 #define __MYOS__DRIVERS__VGA_H
 
 #include <common/types.h>
-#include <drivers/driver.h>
 #include <hardwarecommunication/port.h>
+#include <drivers/driver.h>
 
 namespace myos {
 

@@ -103,7 +103,7 @@ namespace myos {
   class SyscallHandler : public hardwarecommunication::InterruptHandler {
 
     public:
-      SyscallHandler(hardwarecommunication::InterruptManager* interruptManager, common::uint8_t interruptNumber);
+      SyscallHandler(hardwarecommunication::InterruptManager* interruptManager, common::uint8_t InterruptNumber);
       ~SyscallHandler();
 
       virtual common::uint32_t HandleInterrupt(common::uint32_t esp);
