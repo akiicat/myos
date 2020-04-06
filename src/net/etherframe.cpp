@@ -14,7 +14,9 @@ EtherFrameHandler::EtherFrameHandler(EtherFrameProvider* backend, uint16_t ether
 }
 
 EtherFrameHandler::~EtherFrameHandler() {
-  backend->handlers[etherType_BE] = 0;
+  if (backend->handlers[etherType_BE] == this) {
+    backend->handlers[etherType_BE] = 0;
+  }
 }
 
 bool EtherFrameHandler::OnEtherFrameReceived(uint8_t* etherframePayload, uint32_t size) {
@@ -39,6 +41,11 @@ EtherFrameProvider::~EtherFrameProvider() {
 }
 
 bool EtherFrameProvider::OnRawDataReceived(uint8_t* buffer, uint32_t size) {
+  // we should check the size of EtherFrameHeader here
+  if (size < sizeof(EtherFrameHeader)) {
+    return false;
+  }
+
   // we would put EtherFrameHeader structure over it
   EtherFrameHeader* frame = (EtherFrameHeader*)buffer;
   bool sendBack = false;
@@ -95,6 +102,9 @@ void EtherFrameProvider::Send(uint64_t dstMAC_BE, uint16_t etherType_BE, uint8_t
 
   // pass `dst_buffer` the backend
   backend->Send(buffer2, size + sizeof(EtherFrameHeader));
+
+  // free the buffer
+  MemoryManager::activeMemoryManager->free(buffer2);
 }
 
 uint32_t EtherFrameProvider::GetIPAddress() {

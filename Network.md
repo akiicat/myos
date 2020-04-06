@@ -271,3 +271,107 @@ when Machine A communicates with Machine B, the Ether source
 MAC address will be Machine A, and the Ether destination MAC
 address will be Machine B not Machine C.
 
+## IPv4
+
+https://en.wikipedia.org/wiki/IPv4
+
+Ethernet frame is on hardware level, and IPv4 is on software level.
+IPv4 basically just get raw data, and decide these data is just for me or
+for someone else, so should I keep it and processing or discard it or maybe
+forward to someone else.
+
+Ethernet II frame
+  + 0x0806 - Address Resolution Protocol (ARP)
+  + 0x0800 - Internet Protocol version 4 (IPv4)
+      + 0x01 - Internet Control Message Protocol (ICMP)
+      + 0x06 - Transmission Control Protocol (TCP)
+      + 0x17 - User Datagram Protocol (UDP)
+  + 0x8600 - Internet Protocol version 6 (IPv6)
+
+In the wikipedia page about IPv4 is really helpful, There you will see such an
+IP message is structed:
+
+                                   2 bytes
+   +-----------------+----------------+----------------------------------+
+ 0 |  Version (4)    |      IHL (4)   |          Type of Service         |
+   +-----------------+----------------+----------------------------------+
+ 2 |                             Total Length                            |
+   +----------------------------------+----------------------------------+
+ 4 |                            Identification                           |
+   +----------------------------------+----------------------------------+
+ 6 | Flags (3) |                Fragment Offset                          |
+   +---------------------------------------------------------------------+
+ 8 |        Time To Live (TTL)        |             Protocol             |
+   +---------------------------------------------------------------------+
+10 |                            Header Checksum                          |
+   +---------------------------------------------------------------------+
+12 |                                                                     |
+   |                           Source IP Address                         |
+14 |                                                                     |
+   +---------------------------------------------------------------------+
+16 |                                                                     |
+   |                         Destination IP Address                      |
+18 |                                                                     |
+   +---------------------------------------------------------------------+
+20 |                                                                     |
+   |                                                                     |
+...|                          Options (if IHL > 5)                       |
+   |                                                                     |
+256|                                                                     |
+   +---------------------------------------------------------------------+
+
+IHL: Internet Header Length
+
+One byte containing the version and the length of the header, which have
+half byte both.
+
+Then one byte is a 6-bit Differentiated Services Code Point (DSCP) field and 
+a 2-bit Explicit Congestion Notification (ECN) field. But in practice, this
+is used for something else for nowadays. This is for the Type of Service (TOS).
+Most says, this is a privileged message, so should be handle the priority or
+not. So we will just set TOS for all the time, which says we do not have any
+privilege, just a normal message.
+
+Two bytes which tell us the length of the full message.
+
+Then we get two bytes for Identification. This message is for which packets
+should be order. This is not really use in practice. Because TCP has its own way,
+UDP has its own way, and ICMP is small enough. So TCP and UDP has its own way
+what belongs together and in which order. So we just use random number for 
+Identification.
+
+3-bit for Flags, and 13-bit for Fragment Offset. So these messages have limited
+size. Ethernet Frame was 1518 bytes. So if you want to send somethings is larger
+than 1518 bytes, you have to send multiple frames. Fragment Offset is really
+for identifying these fragments, so you have to send multiple fragment of message,
+and each of fragment are arrived in the wrong order. And in practice, we send a
+small packet, always set Flags as not fragment (0x2), and set Fragment Offset as
+zero.
+
+Then we have one byte for Time To Live (TTL). Because you don't want packet
+in circuit run forever. So it must be discarded for sometime. In theory, if we
+did not have the TTL field, the message just pass back and forth between two
+gateways. Every hop will decrease the TTL by one when message go through multiple
+machines. When arrived message's TTL is zero, just discard it. Make sure the
+message is not in circuit forever.
+
+This is actually how trace for find out the rule of packet. First set the TTL
+to one, and get the first hop. And set the TTL to two, and get the second hop,
+and so on. This show the rule of message is going.
+
+One byte for Protocol, this is used to distinguish where to pass:
+
+- 0x01 - Internet Control Message Protocol (ICMP)
+- 0x06 - Transmission Control Protocol (TCP)
+- 0x17 - User Datagram Protocol (UDP)
+
+Two bytes for Header Checksum. This is only the checksum for header not for
+message. The checksum is not complicated. It basically just add all the two
+bytes slice and flip the bits, and there are more stuff for overflow.
+
+Four bytes for the Source IP Address and Four bytes for the Destination.
+
+If counting this, it's 20 bytes, so why we have the length of the header (IHL)
+in the begining. Because you are allowed to add more options behind first
+20 btyes. We do not use option, so check wikipedia to get more information.
+
